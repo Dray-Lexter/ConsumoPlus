@@ -41,8 +41,9 @@ void main() {
       find.descendant(of: content, matching: find.text('Ciudad de prueba')),
       findsOneWidget,
     );
+    expect(AppCopy.demoLabel, 'Demostración');
     expect(
-      find.descendant(of: content, matching: find.text('Demostración')),
+      find.descendant(of: content, matching: find.text(AppCopy.demoLabel)),
       findsOneWidget,
     );
     expect(
