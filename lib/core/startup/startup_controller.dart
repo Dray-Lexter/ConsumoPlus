@@ -11,6 +11,7 @@ class StartupController extends ChangeNotifier {
   Future<void>? _inFlight;
   StartupStatus _status = StartupStatus.idle;
   Object? _error;
+  bool _isDisposed = false;
 
   StartupStatus get status => _status;
   Object? get error => _error;
@@ -20,6 +21,12 @@ class StartupController extends ChangeNotifier {
   }
 
   Future<void> retry() => initialize();
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 
   Future<void> _run() async {
     _status = StartupStatus.initializing;
@@ -32,6 +39,6 @@ class StartupController extends ChangeNotifier {
       _error = error;
       _status = StartupStatus.failure;
     }
-    notifyListeners();
+    if (!_isDisposed) notifyListeners();
   }
 }

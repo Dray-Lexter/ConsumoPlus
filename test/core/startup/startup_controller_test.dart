@@ -34,6 +34,18 @@ class BlockingStartupService implements StartupService {
   }
 }
 
+class FailThenBlockStartupService implements StartupService {
+  int calls = 0;
+  final completer = Completer<void>();
+
+  @override
+  Future<void> initialize() {
+    calls += 1;
+    if (calls == 1) return Future<void>.error(StateError('startup failed'));
+    return completer.future;
+  }
+}
+
 void main() {
   test('initialize reaches success', () async {
     final service = CompletingStartupService();
@@ -72,4 +84,35 @@ void main() {
     await Future.wait([first, second]);
     expect(controller.status, StartupStatus.success);
   });
+
+  test('initialization completes after controller is disposed', () async {
+    final service = BlockingStartupService();
+    final controller = StartupController(service);
+
+    final future = controller.initialize();
+    controller.dispose();
+    service.completer.complete();
+
+    await future;
+  });
+
+  test(
+    'retry clears the previous error while initialization is pending',
+    () async {
+      final service = FailThenBlockStartupService();
+      final controller = StartupController(service);
+
+      await controller.initialize();
+      expect(controller.status, StartupStatus.failure);
+      expect(controller.error, isA<StateError>());
+
+      final retry = controller.retry();
+      expect(controller.status, StartupStatus.initializing);
+      expect(controller.error, isNull);
+
+      service.completer.complete();
+      await retry;
+      expect(controller.status, StartupStatus.success);
+    },
+  );
 }
