@@ -1,6 +1,8 @@
 import '../../core/models/utility_type.dart';
 
 abstract final class AppCopy {
+  static const welcomeTitle = 'Bienvenido a ConsumoPlus';
+  static const settingsTooltip = 'Configuración';
   static const homeTitle =
       'Explora una forma sencilla de visualizar tus servicios de agua y electricidad';
   static const demoNotice =
