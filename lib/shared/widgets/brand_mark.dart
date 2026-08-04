@@ -2,6 +2,8 @@ import 'package:consumo_plus/app/config/app_metadata.dart';
 import 'package:consumo_plus/app/theme/app_colors.dart';
 import 'package:consumo_plus/app/theme/app_radii.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/app/theme/utility_visual_config.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:flutter/material.dart';
 
 class BrandMark extends StatelessWidget {
@@ -11,6 +13,9 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final waterVisual = UtilityType.water.visual;
+    final electricityVisual = UtilityType.electricity.visual;
+
     return Semantics(
       label: AppMetadata.name,
       image: true,
@@ -29,16 +34,16 @@ class BrandMark extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.water_drop_rounded,
+                Icon(
+                  waterVisual.icon,
                   size: AppSpacing.lg,
-                  color: AppColors.water,
+                  color: waterVisual.accent,
                 ),
                 const SizedBox(width: AppSpacing.xs),
-                const Icon(
-                  Icons.bolt_rounded,
+                Icon(
+                  electricityVisual.icon,
                   size: AppSpacing.lg,
-                  color: AppColors.electricity,
+                  color: electricityVisual.accent,
                 ),
               ],
             ),

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:consumo_plus/app/app.dart';
+import 'package:consumo_plus/app/config/app_metadata.dart';
+import 'package:consumo_plus/app/theme/app_durations.dart';
 import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +39,21 @@ class BlockingStartupService implements StartupService {
 }
 
 void main() {
+  testWidgets('Splash announces the product name once', (tester) async {
+    final service = BlockingStartupService();
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(ConsumoPlusApp(startupService: service));
+      await tester.pump();
+      await tester.pump(AppDurations.entrance);
+
+      expect(find.byType(SplashScreen), findsOneWidget);
+      expect(find.bySemanticsLabel(AppMetadata.name), findsOneWidget);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('successful startup replaces Splash with Home', (tester) async {
     final service = CompletingStartupService();
 

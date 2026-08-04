@@ -100,7 +100,7 @@ class _SplashContent extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const BrandMark(),
+        const ExcludeSemantics(child: BrandMark()),
         const SizedBox(height: AppSpacing.lg),
         Text(
           AppMetadata.name,
