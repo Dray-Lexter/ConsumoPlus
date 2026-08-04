@@ -27,6 +27,7 @@ class UtilityServiceCard extends StatelessWidget {
       button: true,
       excludeSemantics: true,
       label: 'Abrir $utilityName de ${identity.displayName}',
+      onTap: onTap,
       child: Material(
         color: AppColors.surface,
         shape: RoundedRectangleBorder(
@@ -43,15 +44,15 @@ class UtilityServiceCard extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(
                 children: [
-                  Transform.rotate(
-                    angle: visual.iconRotationRadians,
-                    child: Container(
-                      width: AppSpacing.xxl,
-                      height: AppSpacing.xxl,
-                      decoration: BoxDecoration(
-                        color: visual.container,
-                        borderRadius: BorderRadius.circular(visual.iconRadius),
-                      ),
+                  Container(
+                    width: AppSpacing.xxl,
+                    height: AppSpacing.xxl,
+                    decoration: BoxDecoration(
+                      color: visual.container,
+                      borderRadius: BorderRadius.circular(visual.iconRadius),
+                    ),
+                    child: Transform.rotate(
+                      angle: visual.iconRotationRadians,
                       child: Icon(
                         visual.icon,
                         color: visual.accent,

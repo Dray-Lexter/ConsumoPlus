@@ -31,7 +31,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const BrandMark(size: AppSpacing.xxl),
+                const ExcludeSemantics(child: BrandMark(size: AppSpacing.xxl)),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(AppMetadata.name, style: textTheme.titleMedium),

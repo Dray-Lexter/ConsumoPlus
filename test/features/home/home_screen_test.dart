@@ -1,7 +1,9 @@
 import 'package:consumo_plus/app/config/app_copy.dart';
+import 'package:consumo_plus/app/config/app_metadata.dart';
 import 'package:consumo_plus/app/routes/app_router.dart';
 import 'package:consumo_plus/app/routes/app_routes.dart';
 import 'package:consumo_plus/app/theme/app_theme.dart';
+import 'package:consumo_plus/app/theme/utility_visual_config.dart';
 import 'package:consumo_plus/core/config/demo_providers.dart';
 import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
@@ -9,6 +11,7 @@ import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
 import 'package:consumo_plus/shared/widgets/utility_service_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _ImmediateStartupService implements StartupService {
@@ -108,16 +111,84 @@ void main() {
     );
   });
 
-  testWidgets('service cards expose one clear button action and tap target', (
+  testWidgets(
+    'electricity rotation applies to the icon but not its container',
+    (tester) async {
+      await tester.pumpWidget(_home());
+
+      final electricityCard = find.byKey(const Key('providerCard-electrosur'));
+      final iconTransform = find.descendant(
+        of: electricityCard,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Transform && widget.child is Icon,
+        ),
+      );
+      final containerTransform = find.descendant(
+        of: electricityCard,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Transform && widget.child is Container,
+        ),
+      );
+
+      expect(iconTransform, findsOneWidget);
+      expect(tester.widget<Transform>(iconTransform).child, isA<Icon>());
+      expect(containerTransform, findsNothing);
+
+      final expectedTransform = Matrix4.rotationZ(
+        electrosurProvider.utilityType.visual.iconRotationRadians,
+      );
+      expect(
+        tester.widget<Transform>(iconTransform).transform.storage,
+        orderedEquals(expectedTransform.storage),
+      );
+    },
+  );
+
+  testWidgets('service card semantic action selects its provider', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     try {
-      await tester.pumpWidget(_home());
+      ProviderIdentity? selectedProvider;
+      await tester.pumpWidget(
+        _home(onProviderSelected: (identity) => selectedProvider = identity),
+      );
 
       final waterCard = find.byKey(const Key('providerCard-eps-tacna'));
-      expect(find.bySemanticsLabel('Abrir Agua de EPS Tacna'), findsOneWidget);
+      final semanticCard = find.bySemanticsLabel('Abrir Agua de EPS Tacna');
+      expect(semanticCard, findsOneWidget);
+      final node = tester.getSemantics(semanticCard);
+      final data = node.getSemanticsData();
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
+
+      tester.binding.performSemanticsAction(
+        SemanticsActionEvent(
+          type: SemanticsAction.tap,
+          nodeId: node.id,
+          viewId: tester.view.viewId,
+        ),
+      );
+      await tester.pump();
+
+      expect(selectedProvider, same(epsTacnaProvider));
       expect(tester.getSize(waterCard).height, greaterThanOrEqualTo(48));
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets('Home announces the header product name once', (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(_home());
+
+      final headerNode = tester.semantics.find(find.text(AppMetadata.name));
+      final label = headerNode.getSemanticsData().label;
+      expect(
+        RegExp(RegExp.escape(AppMetadata.name)).allMatches(label),
+        hasLength(1),
+      );
     } finally {
       semantics.dispose();
     }
