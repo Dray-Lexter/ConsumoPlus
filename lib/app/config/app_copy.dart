@@ -13,7 +13,7 @@ abstract final class AppCopy {
       'No pudimos completar el inicio. Intenta nuevamente.';
   static const retryAction = 'Intentar nuevamente';
   static const routeUnavailable = 'Ruta no disponible';
-  static const demoLabel = 'Versión demostrativa';
+  static const demoLabel = 'Demostración';
   static const unavailableConnection =
       'La conexión con este proveedor todavía no está disponible.';
 

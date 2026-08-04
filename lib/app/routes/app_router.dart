@@ -1,8 +1,10 @@
 import 'package:consumo_plus/app/config/app_copy.dart';
 import 'package:consumo_plus/app/routes/app_routes.dart';
 import 'package:consumo_plus/core/config/demo_providers.dart';
+import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
+import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +29,12 @@ class AppRouter {
             Navigator.of(context).pushNamed(AppRoutes.settings);
           },
         ),
+        AppRoutes.provider => switch (settings.arguments) {
+          ProviderIdentity identity => ProviderPlaceholderScreen(
+            identity: identity,
+          ),
+          _ => const _UnknownRouteScreen(),
+        },
         _ => const _UnknownRouteScreen(),
       },
     );

@@ -9,6 +9,7 @@ import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
+import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/shared/widgets/utility_service_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -215,49 +216,128 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'AppRouter supplies native provider and settings route callbacks',
-    (tester) async {
-      final observer = _RecordingNavigatorObserver();
-      final controller = StartupController(_ImmediateStartupService());
-      addTearDown(controller.dispose);
-      final router = AppRouter(startupController: controller);
+  testWidgets('AppRouter opens both typed providers and returns to Home', (
+    tester,
+  ) async {
+    final observer = _RecordingNavigatorObserver();
+    final controller = StartupController(_ImmediateStartupService());
+    addTearDown(controller.dispose);
+    final router = AppRouter(startupController: controller);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.light(),
-          navigatorObservers: [observer],
-          onGenerateRoute: router.onGenerateRoute,
-          home: Builder(
-            builder: (context) {
-              final homeRoute =
-                  router.onGenerateRoute(
-                        const RouteSettings(name: AppRoutes.home),
-                      )
-                      as MaterialPageRoute<void>;
-              return homeRoute.buildPage(
-                context,
-                kAlwaysDismissedAnimation,
-                kAlwaysDismissedAnimation,
-              );
-            },
-          ),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        navigatorObservers: [observer],
+        onGenerateRoute: router.onGenerateRoute,
+        home: Builder(
+          builder: (context) {
+            final homeRoute =
+                router.onGenerateRoute(
+                      const RouteSettings(name: AppRoutes.home),
+                    )
+                    as MaterialPageRoute<void>;
+            return homeRoute.buildPage(
+              context,
+              kAlwaysDismissedAnimation,
+              kAlwaysDismissedAnimation,
+            );
+          },
+        ),
+      ),
+    );
+
+    final epsCard = find.byKey(const Key('providerCard-eps-tacna'));
+    await tester.ensureVisible(epsCard);
+    await tester.tap(epsCard);
+    await tester.pumpAndSettle();
+    expect(observer.pushedRoutes.last.settings.name, AppRoutes.provider);
+    expect(
+      observer.pushedRoutes.last.settings.arguments,
+      same(epsTacnaProvider),
+    );
+    expect(find.byType(ProviderPlaceholderScreen), findsOneWidget);
+    expect(
+      tester
+          .widget<ProviderPlaceholderScreen>(
+            find.byType(ProviderPlaceholderScreen),
+          )
+          .identity,
+      same(epsTacnaProvider),
+    );
+    expect(find.text('Agua'), findsNWidgets(2));
+    expect(find.text('EPS Tacna'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('homeScreen')), findsOneWidget);
+
+    final electrosurCard = find.byKey(const Key('providerCard-electrosur'));
+    await tester.ensureVisible(electrosurCard);
+    await tester.tap(electrosurCard);
+    await tester.pumpAndSettle();
+    expect(observer.pushedRoutes.last.settings.name, AppRoutes.provider);
+    expect(
+      observer.pushedRoutes.last.settings.arguments,
+      same(electrosurProvider),
+    );
+    expect(find.byType(ProviderPlaceholderScreen), findsOneWidget);
+    expect(
+      tester
+          .widget<ProviderPlaceholderScreen>(
+            find.byType(ProviderPlaceholderScreen),
+          )
+          .identity,
+      same(electrosurProvider),
+    );
+    expect(find.text('Electricidad'), findsNWidgets(2));
+    expect(find.text('Electrosur'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('homeScreen')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('openSettingsButton')));
+    await tester.pumpAndSettle();
+    expect(observer.pushedRoutes.last.settings.name, AppRoutes.settings);
+    expect(find.text(AppCopy.routeUnavailable), findsOneWidget);
+  });
+
+  testWidgets('AppRouter rejects missing and wrong provider arguments', (
+    tester,
+  ) async {
+    final controller = StartupController(_ImmediateStartupService());
+    addTearDown(controller.dispose);
+    final router = AppRouter(startupController: controller);
+
+    Widget routeScreen(RouteSettings settings) {
+      return MaterialApp(
+        theme: AppTheme.light(),
+        home: Builder(
+          builder: (context) {
+            final route =
+                router.onGenerateRoute(settings) as MaterialPageRoute<void>;
+            return route.buildPage(
+              context,
+              kAlwaysDismissedAnimation,
+              kAlwaysDismissedAnimation,
+            );
+          },
         ),
       );
+    }
 
-      await tester.tap(find.byKey(const Key('providerCard-eps-tacna')));
-      await tester.pumpAndSettle();
-      expect(observer.pushedRoutes.last.settings.name, AppRoutes.provider);
-      expect(
-        observer.pushedRoutes.last.settings.arguments,
-        same(epsTacnaProvider),
-      );
+    await tester.pumpWidget(
+      routeScreen(const RouteSettings(name: AppRoutes.provider)),
+    );
+    expect(find.text(AppCopy.routeUnavailable), findsOneWidget);
+    expect(find.byType(ProviderPlaceholderScreen), findsNothing);
 
-      Navigator.of(tester.element(find.text(AppCopy.routeUnavailable))).pop();
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('openSettingsButton')));
-      await tester.pumpAndSettle();
-      expect(observer.pushedRoutes.last.settings.name, AppRoutes.settings);
-    },
-  );
+    await tester.pumpWidget(
+      routeScreen(
+        const RouteSettings(name: AppRoutes.provider, arguments: 'EPS Tacna'),
+      ),
+    );
+    expect(find.text(AppCopy.routeUnavailable), findsOneWidget);
+    expect(find.byType(ProviderPlaceholderScreen), findsNothing);
+  });
 }
