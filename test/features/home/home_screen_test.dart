@@ -10,6 +10,7 @@ import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
+import 'package:consumo_plus/features/settings/settings_screen.dart';
 import 'package:consumo_plus/shared/widgets/utility_service_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -299,7 +300,12 @@ void main() {
     await tester.tap(find.byKey(const Key('openSettingsButton')));
     await tester.pumpAndSettle();
     expect(observer.pushedRoutes.last.settings.name, AppRoutes.settings);
-    expect(find.text(AppCopy.routeUnavailable), findsOneWidget);
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(find.text('Configuración'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('homeScreen')), findsOneWidget);
   });
 
   testWidgets('AppRouter rejects missing and wrong provider arguments', (
