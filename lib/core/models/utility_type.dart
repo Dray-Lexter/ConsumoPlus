@@ -1,0 +1,1 @@
+enum UtilityType { water, electricity }
