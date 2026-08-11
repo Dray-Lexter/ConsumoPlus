@@ -6,8 +6,8 @@ const epsTacnaProvider = ProviderIdentity(
   displayName: 'EPS Tacna',
   locality: 'Tacna',
   utilityType: UtilityType.water,
-  cardDescription: 'Consulta el espacio demostrativo de tu servicio de agua',
-  demoMessage: 'Aquí se preparará la conexión con EPS Tacna.',
+  cardDescription: 'Consulta tus recibos, pagos y datos del suministro',
+  demoMessage: 'La conexión con EPS Tacna está disponible.',
 );
 
 const electrosurProvider = ProviderIdentity(
@@ -15,9 +15,8 @@ const electrosurProvider = ProviderIdentity(
   displayName: 'Electrosur',
   locality: 'Tacna',
   utilityType: UtilityType.electricity,
-  cardDescription:
-      'Consulta el espacio demostrativo de tu servicio de electricidad',
-  demoMessage: 'Aquí se preparará la conexión con Electrosur.',
+  cardDescription: 'Consulta tu estado de cuenta, consumos y pagos',
+  demoMessage: 'La conexión con Electrosur está disponible.',
 );
 
 const demoProviders = <ProviderIdentity>[epsTacnaProvider, electrosurProvider];

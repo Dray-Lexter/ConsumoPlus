@@ -53,7 +53,7 @@ class SupplyDetailsScreen extends StatelessWidget {
               context,
               title: 'Eliminar datos de Agua',
               message:
-                  'Se borraran la cuenta, recibos, pagos, usuario y clave local de Agua.',
+                  'Se borrarán la cuenta, recibos, pagos y usuario recordado de Agua. Electricidad permanecerá intacta.',
               action: 'Eliminar',
               callback: onDeleteData,
             ),

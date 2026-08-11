@@ -1,5 +1,3 @@
-import 'package:consumo_plus/features/water/data/local/database_key_store.dart';
-import 'package:consumo_plus/features/water/data/local/encrypted_water_database.dart';
 import 'package:consumo_plus/features/water/data/local/remembered_username_store.dart';
 import 'package:consumo_plus/features/water/data/local/water_local_data_source.dart';
 import 'package:consumo_plus/features/water/data/remote/eps_tacna_remote_data_source.dart';
@@ -14,14 +12,10 @@ class EpsTacnaRepository implements WaterRepository {
     required WaterLocalStore local,
     required EpsTacnaRemoteSource remote,
     required RememberedUsernameStore usernameStore,
-    required DatabaseKeyStore keyStore,
-    required WaterDatabaseLifecycle databaseLifecycle,
     DateTime Function()? clock,
   }) : _local = local,
        _remote = remote,
        _usernameStore = usernameStore,
-       _keyStore = keyStore,
-       _databaseLifecycle = databaseLifecycle,
        _clock = clock ?? DateTime.now;
 
   static const providerId = EpsTacnaRemoteDataSource.providerId;
@@ -29,8 +23,6 @@ class EpsTacnaRepository implements WaterRepository {
   final WaterLocalStore _local;
   final EpsTacnaRemoteSource _remote;
   final RememberedUsernameStore _usernameStore;
-  final DatabaseKeyStore _keyStore;
-  final WaterDatabaseLifecycle _databaseLifecycle;
   final DateTime Function() _clock;
 
   @override
@@ -114,8 +106,6 @@ class EpsTacnaRepository implements WaterRepository {
   @override
   Future<void> deleteWaterData() async {
     await _local.deleteProvider(providerId);
-    await _databaseLifecycle.delete();
     await _usernameStore.delete();
-    await _keyStore.delete();
   }
 }

@@ -1,4 +1,4 @@
-import 'package:consumo_plus/features/water/data/local/secure_database_key_store.dart';
+import 'package:consumo_plus/core/data/local/secure_database_key_store.dart';
 
 abstract interface class RememberedUsernameStore {
   Future<String?> read();

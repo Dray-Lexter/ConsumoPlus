@@ -1,21 +1,21 @@
 import 'package:consumo_plus/app/config/app_metadata.dart';
+import 'package:consumo_plus/app/app_dependencies.dart';
 import 'package:consumo_plus/app/routes/app_router.dart';
 import 'package:consumo_plus/app/routes/app_routes.dart';
 import 'package:consumo_plus/app/theme/app_theme.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:flutter/material.dart';
-import 'package:consumo_plus/features/water/application/water_dependencies.dart';
 
 class ConsumoPlusApp extends StatefulWidget {
   const ConsumoPlusApp({
     super.key,
     required this.startupService,
-    this.waterDependencies,
+    this.dependencies,
   });
 
   final StartupService startupService;
-  final WaterDependencies? waterDependencies;
+  final AppDependencies? dependencies;
 
   @override
   State<ConsumoPlusApp> createState() => _ConsumoPlusAppState();
@@ -23,20 +23,19 @@ class ConsumoPlusApp extends StatefulWidget {
 
 class _ConsumoPlusAppState extends State<ConsumoPlusApp> {
   late final StartupController _startupController;
-  late final WaterDependencies _waterDependencies;
+  late final AppDependencies _dependencies;
 
   @override
   void initState() {
     super.initState();
     _startupController = StartupController(widget.startupService);
-    _waterDependencies =
-        widget.waterDependencies ?? WaterDependencies.production();
+    _dependencies = widget.dependencies ?? AppDependencies.production();
   }
 
   @override
   void dispose() {
     _startupController.dispose();
-    _waterDependencies.dispose();
+    _dependencies.dispose();
     super.dispose();
   }
 
@@ -49,7 +48,8 @@ class _ConsumoPlusAppState extends State<ConsumoPlusApp> {
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRouter(
         startupController: _startupController,
-        createWaterViewModel: _waterDependencies.createViewModel,
+        createWaterViewModel: _dependencies.createWaterViewModel,
+        createElectricityViewModel: _dependencies.createElectricityViewModel,
       ).onGenerateRoute,
     );
   }

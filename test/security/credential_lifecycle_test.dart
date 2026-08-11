@@ -4,8 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('presentation is isolated from network, HTML and persistence APIs', () {
-    final files = Directory('lib/features/water/presentation')
-        .listSync(recursive: true)
+    final files = ['water', 'electricity']
+        .expand(
+          (feature) => Directory(
+            'lib/features/$feature/presentation',
+          ).listSync(recursive: true),
+        )
         .whereType<File>()
         .where((file) => file.path.endsWith('.dart'));
     const forbidden = <String>[
@@ -24,19 +28,26 @@ void main() {
   });
 
   test('password is absent from durable state and secure storage keys', () {
-    final state = File(
+    final state = [
       'lib/features/water/application/water_state.dart',
-    ).readAsStringSync();
-    final stores = Directory('lib/features/water/data/local')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart'))
-        .map((file) => file.readAsStringSync())
-        .join('\n');
+      'lib/features/electricity/application/electricity_state.dart',
+    ].map((path) => File(path).readAsStringSync()).join('\n');
+    final stores =
+        [
+              Directory('lib/core/data/local'),
+              Directory('lib/features/water/data/local'),
+              Directory('lib/features/electricity/data/local'),
+            ]
+            .expand((directory) => directory.listSync(recursive: true))
+            .whereType<File>()
+            .where((file) => file.path.endsWith('.dart'))
+            .map((file) => file.readAsStringSync())
+            .join('\n');
 
     expect(state.toLowerCase(), isNot(contains('password')));
     expect(stores, isNot(contains('remembered_password')));
     expect(stores, isNot(contains('eps_tacna_password')));
+    expect(stores, isNot(contains('electrosur_password')));
     expect(
       RegExp(
         r"storage\.write\([^\n]*password",

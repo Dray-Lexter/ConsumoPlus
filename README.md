@@ -1,40 +1,24 @@
 # ConsumoPlus
 
-Aplicacion Flutter para consultar servicios domesticos en Tacna. La version
-`0.1.0` implementa Agua con EPS Tacna y conserva Electricidad con Electrosur
-como espacio demostrativo.
+Aplicación Flutter local-first para consultar servicios domésticos en Tacna. La versión `0.1.0` integra Agua con EPS Tacna y Electricidad con Electrosur.
 
-## Agua en esta etapa
+## Servicios disponibles
 
-- El usuario inicia la consulta manualmente y autoriza de forma explicita la
-  conexion HTTP del portal de EPS Tacna.
-- La clave y las cookies solo existen en memoria durante la consulta.
-- El nombre de usuario puede recordarse mediante el almacenamiento seguro de
-  Android.
-- Cuenta, recibos, pagos y metadatos se guardan en una base SQLCipher local.
-- Al volver a Agua, la app lee primero la copia local y no usa la red.
-- Actualizar siempre solicita nuevamente la clave.
-- Los historiales, el grafico y los detalles funcionan sin Internet despues de
-  una sincronizacion correcta.
-- Una descarga parcial o fallida conserva los datos validos anteriores.
+- La consulta se inicia manualmente y exige autorización explícita porque ambos portales usan HTTP.
+- Las claves y cookies existen solo en memoria durante cada sincronización.
+- El usuario de EPS Tacna y el contrato de Electrosur pueden recordarse; las claves no.
+- Estado de cuenta, consumos, recibos, pagos, suministro y metadatos se guardan en una única base SQLCipher.
+- Al reabrir un módulo, la aplicación muestra primero la copia local sin usar la red.
+- Una descarga parcial o fallida conserva los datos validados anteriormente.
+- La eliminación es independiente: Agua nunca borra Electricidad y viceversa.
 
-Los datos del suministro se extraen del bloque informativo de Facturacion. Los
-campos secundarios, como direccion, estado, tarifa, medidor y tipo de conexion,
-son opcionales: si alguno no aparece, la app muestra
-`No disponible en el portal` sin invalidar el resto de la sincronizacion ni
-inventar valores. Un error posterior a un login aceptado se informa como fallo
-de sincronizacion, no como credenciales incorrectas.
+En EPS Tacna, los datos del suministro se extraen del bloque informativo de Facturación. En Electrosur, contrato, titular, dirección y tarifa se obtienen de Estado de Cuenta, y los campos secundarios se combinan desde Suministro. Un campo opcional ausente se muestra como `No disponible en el portal` sin invalidar las demás secciones.
 
 ## Seguridad importante
 
-EPS Tacna sirve su oficina virtual mediante HTTP. Android bloquea HTTP por
-defecto en la app y permite una excepcion solo para
-`oficinavirtual.epstacna.com.pe`. El formulario explica el riesgo antes de
-habilitar la conexion. ConsumoPlus no incluye backend, nube, analitica ni
-telemetria.
+Android bloquea HTTP globalmente. La configuración autoriza cleartext únicamente a `oficinavirtual.epstacna.com.pe` y `www.electrosur.com.pe`. ConsumoPlus no incluye backend, nube, analítica ni telemetría.
 
-Consulta [docs/security.md](docs/security.md) y
-[docs/eps_tacna_connector.md](docs/eps_tacna_connector.md) para los detalles.
+Consulta [seguridad](docs/security.md), [conector EPS Tacna](docs/eps_tacna_connector.md) y [conector Electrosur](docs/electrosur_connector.md).
 
 ## Ejecutar y verificar
 
@@ -54,30 +38,19 @@ El APK se genera en `build/app/outputs/flutter-apk/app-debug.apk`.
 
 ```text
 lib/
-  app/                    rutas, tema y configuracion de producto
-  core/                   identidad de proveedores e inicio reemplazable
-  features/water/
-    application/          WaterViewModel, estados y composicion
-    domain/               modelos, errores y contrato del repositorio
-    data/
-      remote/             HTTP, cookies en memoria y fuente EPS Tacna
-      parsers/            HTML a modelos tipados
-      local/              SQLCipher, esquema y almacenamiento seguro
-      repositories/       sincronizacion atomica local-first
-    presentation/         pantallas Material 3 y widgets
-  features/home/          entrada a Agua y Electricidad
-  features/provider/      placeholder reutilizable para Electrosur
-test/                     unitarias, widgets, seguridad y fixtures sanitizados
+  app/                         rutas, tema, composición y producto
+  core/data/local/             esquema SQLCipher y clave compartida
+  features/water/              módulo EPS Tacna
+  features/electricity/        módulo Electrosur
+    application/               ViewModel, estado y dependencias
+    domain/                    modelos, errores y repositorio
+    data/parsers/              HTML sanitizado a modelos tipados
+    data/remote/               HTTP y sesión efímera
+    data/local/                tablas y persistencia
+    data/repositories/         sincronización local-first
+    presentation/              pantallas Material 3
+  features/home/               entrada tipada a ambos servicios
+test/                          unitarias, widgets, seguridad y fixtures ficticios
 ```
 
-Documentos adicionales:
-
-- [docs/architecture.md](docs/architecture.md)
-- [docs/data_dictionary.md](docs/data_dictionary.md)
-- [docs/design_system.md](docs/design_system.md)
-- [docs/security.md](docs/security.md)
-- [docs/eps_tacna_connector.md](docs/eps_tacna_connector.md)
-
-No se deben usar credenciales reales en pruebas, fixtures, capturas, commits o
-documentacion. La prueba manual del portal se realiza unicamente en un telefono
-o sesion controlada, ingresando las credenciales directamente.
+No se deben usar credenciales ni datos personales reales en pruebas, fixtures, capturas, commits o documentación. La prueba del portal real se realiza únicamente en un teléfono controlado, ingresando las credenciales directamente.

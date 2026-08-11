@@ -9,6 +9,7 @@ import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
+import 'package:consumo_plus/features/electricity/presentation/electricity_screen.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/settings/settings_screen.dart';
 import 'package:consumo_plus/features/water/presentation/water_screen.dart';
@@ -274,17 +275,9 @@ void main() {
       observer.pushedRoutes.last.settings.arguments,
       same(electrosurProvider),
     );
-    expect(find.byType(ProviderPlaceholderScreen), findsOneWidget);
-    expect(
-      tester
-          .widget<ProviderPlaceholderScreen>(
-            find.byType(ProviderPlaceholderScreen),
-          )
-          .identity,
-      same(electrosurProvider),
-    );
-    expect(find.text('Electricidad'), findsNWidgets(2));
-    expect(find.text('Electrosur'), findsOneWidget);
+    expect(find.byType(ElectricityScreen), findsOneWidget);
+    expect(find.byType(ProviderPlaceholderScreen), findsNothing);
+    expect(find.text('Electricidad · Electrosur'), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

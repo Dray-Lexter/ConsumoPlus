@@ -1,5 +1,3 @@
-import 'package:consumo_plus/features/water/data/local/database_key_store.dart';
-import 'package:consumo_plus/features/water/data/local/encrypted_water_database.dart';
 import 'package:consumo_plus/features/water/data/local/remembered_username_store.dart';
 import 'package:consumo_plus/features/water/data/local/water_local_data_source.dart';
 import 'package:consumo_plus/features/water/data/remote/eps_tacna_remote_data_source.dart';
@@ -113,23 +111,6 @@ class _FakeUsernameStore implements RememberedUsernameStore {
   }
 }
 
-class _FakeKeyStore implements DatabaseKeyStore {
-  var deleteCalls = 0;
-
-  @override
-  Future<void> delete() async => deleteCalls += 1;
-
-  @override
-  Future<String> getOrCreate() async => 'KEY-FOR-TEST';
-}
-
-class _FakeDatabaseLifecycle implements WaterDatabaseLifecycle {
-  var deleteCalls = 0;
-
-  @override
-  Future<void> delete() async => deleteCalls += 1;
-}
-
 void main() {
   const providerId = 'eps-tacna';
   const customerCode = 'CLIENTE-DE-PRUEBA';
@@ -153,8 +134,6 @@ void main() {
       local: local,
       remote: remote,
       usernameStore: _FakeUsernameStore(),
-      keyStore: _FakeKeyStore(),
-      databaseLifecycle: _FakeDatabaseLifecycle(),
       clock: () => now,
     );
 
@@ -170,8 +149,6 @@ void main() {
       local: local,
       remote: remote,
       usernameStore: usernameStore,
-      keyStore: _FakeKeyStore(),
-      databaseLifecycle: _FakeDatabaseLifecycle(),
       clock: () => now,
     );
 
@@ -214,8 +191,6 @@ void main() {
         local: local,
         remote: remote,
         usernameStore: _FakeUsernameStore(),
-        keyStore: _FakeKeyStore(),
-        databaseLifecycle: _FakeDatabaseLifecycle(),
         clock: () => now.add(const Duration(hours: 1)),
       );
 
@@ -240,8 +215,6 @@ void main() {
       local: local,
       remote: _FakeRemote(remoteData),
       usernameStore: usernameStore,
-      keyStore: _FakeKeyStore(),
-      databaseLifecycle: _FakeDatabaseLifecycle(),
       clock: () => now,
     );
 
@@ -261,8 +234,6 @@ void main() {
       local: local,
       remote: _FakeRemote(remoteData),
       usernameStore: _FakeUsernameStore(),
-      keyStore: _FakeKeyStore(),
-      databaseLifecycle: _FakeDatabaseLifecycle(),
       clock: () => now,
     );
 
@@ -277,25 +248,22 @@ void main() {
     expect(local.failureCode, 'local_storage');
   });
 
-  test('deleteWaterData clears rows, database, username and key', () async {
-    final local = _FakeLocal();
-    final usernameStore = _FakeUsernameStore()..value = customerCode;
-    final keyStore = _FakeKeyStore();
-    final lifecycle = _FakeDatabaseLifecycle();
-    final repository = EpsTacnaRepository(
-      local: local,
-      remote: _FakeRemote(remoteData),
-      usernameStore: usernameStore,
-      keyStore: keyStore,
-      databaseLifecycle: lifecycle,
-      clock: () => now,
-    );
+  test(
+    'deleteWaterData clears only Water rows and remembered username',
+    () async {
+      final local = _FakeLocal();
+      final usernameStore = _FakeUsernameStore()..value = customerCode;
+      final repository = EpsTacnaRepository(
+        local: local,
+        remote: _FakeRemote(remoteData),
+        usernameStore: usernameStore,
+        clock: () => now,
+      );
 
-    await repository.deleteWaterData();
+      await repository.deleteWaterData();
 
-    expect(local.deleteCalls, 1);
-    expect(lifecycle.deleteCalls, 1);
-    expect(usernameStore.deleteCalls, 1);
-    expect(keyStore.deleteCalls, 1);
-  });
+      expect(local.deleteCalls, 1);
+      expect(usernameStore.deleteCalls, 1);
+    },
+  );
 }

@@ -7,17 +7,27 @@ import 'package:consumo_plus/features/home/home_screen.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/settings/settings_screen.dart';
 import 'package:consumo_plus/features/splash/splash_screen.dart';
+import 'package:consumo_plus/features/electricity/presentation/electricity_screen.dart';
 import 'package:consumo_plus/features/water/presentation/water_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
-  const AppRouter({required this.startupController, this.createWaterViewModel});
+  const AppRouter({
+    required this.startupController,
+    this.createWaterViewModel,
+    this.createElectricityViewModel,
+  });
 
   final StartupController startupController;
   final WaterViewModelFactory? createWaterViewModel;
+  final ElectricityViewModelFactory? createElectricityViewModel;
 
   static Future<Never> _missingWaterDependencies() {
     throw StateError('Water dependencies are not configured.');
+  }
+
+  static Future<Never> _missingElectricityDependencies() {
+    throw StateError('Electricity dependencies are not configured.');
   }
 
   Route<void> onGenerateRoute(RouteSettings settings) {
@@ -42,6 +52,11 @@ class AppRouter {
             WaterScreen(
               createViewModel:
                   createWaterViewModel ?? _missingWaterDependencies,
+            ),
+          ProviderIdentity identity when identity.id == electrosurProvider.id =>
+            ElectricityScreen(
+              createViewModel:
+                  createElectricityViewModel ?? _missingElectricityDependencies,
             ),
           ProviderIdentity identity => ProviderPlaceholderScreen(
             identity: identity,

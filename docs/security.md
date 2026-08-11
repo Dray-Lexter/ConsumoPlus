@@ -1,30 +1,21 @@
 # Seguridad y privacidad
 
-## Credenciales y sesion
+## Credenciales y sesiones
 
-- La clave se mantiene solo en el controlador del formulario y en la pila de la
-  operacion activa; nunca forma parte de `WaterState`, modelos, SQL o secure
-  storage. El controlador se limpia tras exito, error, cancelacion y dispose.
-- Las cookies se manejan como objetos `Cookie` en `InMemoryCookieJar`. No se
-  serializan y se eliminan al cerrar el cliente.
-- Excepciones y `toString()` exponen solo codigos y mensajes sanitizados.
-- El usuario puede recordarse; se guarda separado de la base mediante
-  `flutter_secure_storage`.
+- Las claves viven solo en controladores de formulario y argumentos de la operación activa. No forman parte de estados, modelos, SQL ni almacenamiento seguro.
+- Los controladores se limpian tras éxito, error, cancelación y `dispose`.
+- Las cookies se guardan solo en memoria dentro de cada transporte y se destruyen en `close()` desde un bloque `finally`.
+- Electrosur exige `.ASPXAUTH`; su valor nunca se expone, persiste ni registra.
+- Se pueden recordar el usuario EPS Tacna y el contrato Electrosur, nunca sus claves.
+- Excepciones y `toString()` contienen únicamente códigos y mensajes sanitizados.
 
 ## Datos locales
 
-`consumo_plus_water.db` se abre en produccion exclusivamente mediante
-`sqflite_sqlcipher` y un password aleatorio de 32 bytes. La clave se genera con
-`Random.secure` y se guarda con `flutter_secure_storage`, respaldado por el
-almacenamiento seguro de Android. El borrado de Agua elimina filas, archivo de
-base, usuario recordado y clave.
+`consumo_plus_water.db` conserva su nombre por compatibilidad, pero es la base compartida de la aplicación. Se abre en producción exclusivamente con `sqflite_sqlcipher` y una clave aleatoria de 32 bytes protegida por `flutter_secure_storage`.
 
-No existe fallback a SQLite plano. Los backups y transferencia Android estan
-deshabilitados y las reglas excluyen archivos, bases y preferencias.
+No existe fallback a SQLite plano. Backups y transferencia Android están deshabilitados. Eliminar Agua o Electricidad borra solo sus tablas y su identificador recordado; la base y clave compartida permanecen para proteger el otro servicio.
 
-La prueba `integration_test/sqlcipher_android_test.dart` crea una base cifrada
-en un dispositivo Android y verifica que una clave ausente o incorrecta no
-pueda leerla. Se ejecuta con:
+La integración `integration_test/sqlcipher_android_test.dart` verifica en Android que una clave ausente o incorrecta no puede leer la base:
 
 ```powershell
 flutter test integration_test/sqlcipher_android_test.dart -d <device-id>
@@ -32,27 +23,22 @@ flutter test integration_test/sqlcipher_android_test.dart -d <device-id>
 
 ## Red
 
-La configuracion base de Android bloquea cleartext. Una unica regla permite
-HTTP al dominio exacto `oficinavirtual.epstacna.com.pe`, sin subdominios. El
-transporte vuelve a validar esquema, host y puerto en cada solicitud y
-redireccion. La UI exige una autorizacion marcada antes de habilitar el boton.
+La configuración Android mantiene `usesCleartextTraffic="false"` y `base-config` en false. Solo permite HTTP a los hosts exactos:
 
-## Pruebas y registros
+- `oficinavirtual.epstacna.com.pe`
+- `www.electrosur.com.pe`
 
-- Las pruebas automaticas nunca acceden al portal real.
-- Fixtures, nombres, codigos, recibos y montos son ficticios y sanitizados.
-- No existen interceptores de logging ni impresiones de cuerpos HTTP.
-- El escaneo de secretos revisa fuentes candidatas y, ante un hallazgo, informa
-  solo ruta y linea.
-- Las credenciales incorrectas se distinguen de fallos de Facturacion, Pagos o
-  almacenamiento ocurridos despues de aceptar el login. Todos exponen solo un
-  codigo y un mensaje seguros.
-- Un campo secundario ausente en el bloque informativo de Facturacion queda
-  nulo y no descarta los demas datos ya validados.
+No se incluyen subdominios. Cada transporte vuelve a validar esquema, host y puerto antes de enviar. La interfaz exige autorización explícita y recomienda evitar Wi-Fi público.
 
-## Amenazas fuera de alcance
+## Parsers, pruebas y registros
 
-ConsumoPlus no puede aportar cifrado en transito que el servidor HTTP de EPS
-Tacna no ofrece. La advertencia y autorizacion reducen el riesgo de uso
-inadvertido, pero una red hostil aun podria observar o alterar trafico. El
-proveedor debe migrar a HTTPS para resolver ese riesgo de raiz.
+- Las pruebas automáticas nunca acceden a portales reales.
+- Fixtures, nombres, direcciones, contratos, medidores y montos son ficticios.
+- No hay interceptores de logging ni impresiones de cuerpos, cookies, cabeceras o credenciales.
+- Credenciales rechazadas, sesión expirada, red, estructura por sección y almacenamiento son errores distintos.
+- Un campo secundario ausente queda nulo sin invalidar datos obligatorios ya verificados.
+- El escaneo de secretos reporta solo archivo y línea, nunca el valor sospechoso.
+
+## Riesgo residual
+
+ConsumoPlus no puede añadir cifrado en tránsito a portales HTTP. La advertencia y autorización reducen el uso inadvertido, pero una red hostil aún podría observar o alterar el tráfico. Solo los proveedores pueden resolver ese riesgo migrando a HTTPS.

@@ -1,45 +1,41 @@
-# Arquitectura de Agua
+# Arquitectura
 
-ConsumoPlus usa una arquitectura feature-first MVVM con dependencias por
-constructor.
+ConsumoPlus usa arquitectura feature-first MVVM y dependencias por constructor.
 
 ```text
-WaterScreen -> WaterViewModel -> WaterRepository
-                                  |-- WaterLocalStore -> SQLCipher
-                                  |-- EpsTacnaRemoteSource
-                                      -> parsers + HTTP + cookies en memoria
+WaterScreen       -> WaterViewModel       -> WaterRepository
+ElectricityScreen -> ElectricityViewModel -> ElectricityRepository
+                                              |-- LocalDataSource -> SQLCipher
+                                              |-- RemoteDataSource
+                                                  -> parsers -> HTTP
+```
+
+Para Electrosur, el recorrido concreto es:
+
+```text
+ElectricityScreen -> ElectricityViewModel -> ElectrosurRepository
+  -> ElectrosurRemoteDataSource -> ElectrosurHttpClient
+  -> ElectricityLocalDataSource -> SQLCipher
 ```
 
 ## Dominio
 
-Contiene modelos inmutables, dinero en centimos, excepciones con mensajes
-seguros y el contrato `WaterRepository`. No importa Flutter, HTTP, HTML ni SQL.
+Los modelos son inmutables. El dinero usa céntimos enteros y el consumo eléctrico usa Wh enteros. Las excepciones solo exponen códigos y mensajes sanitizados. El dominio no importa Flutter, HTTP, HTML ni SQL.
 
 ## Datos
 
-`EpsTacnaRemoteDataSource` coordina login, cuenta, facturacion, pagos y logout.
-Cada operacion crea un cliente nuevo; su contenedor de cookies se destruye en
-`finally`. Los parsers ubican columnas por encabezado normalizado y rechazan
-estructuras incompletas.
+Cada `RemoteDataSource` coordina una sincronización completa y crea una sesión nueva. Los parsers buscan etiquetas y encabezados normalizados y distinguen expiración de sesión de cambios estructurales.
 
-`WaterLocalDataSource` lee y actualiza las cuatro tablas en una transaccion.
-`EpsTacnaRepository` solo persiste cuando la descarga completa fue validada.
-En un fallo registra un codigo sanitizado cuando existe una cuenta local y
-conserva el snapshot anterior.
+Los repositorios escriben únicamente después de validar las secciones obligatorias. Los `LocalDataSource` hacen upsert dentro de una transacción; un fallo conserva el snapshot anterior. El bloque secundario Suministro de Electrosur es opcional y no descarta Estado de Cuenta, Consumos ni Pagos.
 
-## Aplicacion y presentacion
+## Base compartida
 
-`WaterViewModel.initialize()` carga SQLCipher y el usuario recordado; nunca
-llama al remoto. `synchronize()` recibe la clave como argumento y no la guarda
-en estado ni campos. `WaterScreen` borra el controlador de clave tras cada
-intento y al liberarse.
+`AppDependencies` comparte una sola instancia de `EncryptedAppDatabase`, almacenamiento seguro y clave SQLCipher. El archivo físico mantiene el nombre histórico `consumo_plus_water.db` para actualizar instalaciones existentes sin perder datos.
 
-Las pantallas reciben modelos tipados. La navegacion usa `Navigator` y
-`MaterialPageRoute`; ninguna View conoce endpoints, HTML o SQL.
+El esquema 2 conserva las cuatro tablas de Agua y agrega cinco de Electricidad. Cada módulo elimina solo sus filas y su identificador recordado; ningún repositorio borra la base o clave compartida.
 
-## Incorporar otro proveedor
+## Aplicación y presentación
 
-Un proveedor futuro implementara su fuente remota, parsers y configuracion,
-reutilizando los modelos y presentacion que realmente compartan semantica. No
-se crean selectores, carpetas vacias ni abstracciones especulativas en esta
-etapa.
+Los ViewModels cargan primero SQLCipher y el identificador recordado; no llaman la red durante `initialize()`. La clave llega como argumento a `synchronize()` y nunca forma parte del estado durable.
+
+Las pantallas reciben modelos tipados y navegan con `Navigator` y `MaterialPageRoute`. Ninguna View conoce endpoints, HTML, SQL o almacenamiento seguro.

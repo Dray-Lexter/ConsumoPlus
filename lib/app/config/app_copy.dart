@@ -11,7 +11,7 @@ abstract final class AppCopy {
   static const homeTitle =
       'Explora una forma sencilla de visualizar tus servicios de agua y electricidad';
   static const demoNotice =
-      'Esta versión demostrativa todavía no se conecta con los proveedores';
+      'ConsumoPlus solo consulta a los proveedores cuando tú lo solicitas y conserva una copia cifrada para usarla sin conexión.';
   static const splashTagline = 'Agua y electricidad, en un solo lugar';
   static const startupErrorTitle = 'No pudimos preparar ConsumoPlus';
   static const startupErrorMessage =

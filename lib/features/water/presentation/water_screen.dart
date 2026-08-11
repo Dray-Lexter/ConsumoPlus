@@ -142,8 +142,8 @@ class _WaterScreenState extends State<WaterScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Eliminar datos de Agua'),
         content: const Text(
-          'Se borraran la copia cifrada, el usuario recordado y la clave local '
-          'de Agua. Tus datos de Electricidad no se modificaran.',
+          'Se borrarán únicamente los datos cifrados de Agua y el usuario '
+          'recordado. Tus datos de Electricidad no se modificarán.',
         ),
         actions: [
           TextButton(
