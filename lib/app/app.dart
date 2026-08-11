@@ -48,6 +48,9 @@ class _ConsumoPlusAppState extends State<ConsumoPlusApp> {
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRouter(
         startupController: _startupController,
+        createUpcomingDatesController:
+            _dependencies.createUpcomingDatesController,
+        createForecastController: _dependencies.createForecastController,
         createWaterViewModel: _dependencies.createWaterViewModel,
         createElectricityViewModel: _dependencies.createElectricityViewModel,
       ).onGenerateRoute,

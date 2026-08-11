@@ -18,16 +18,57 @@ Widget _settings({TextScaler? textScaler}) {
 }
 
 void main() {
-  testWidgets('Settings presents static product information', (tester) async {
+  testWidgets('Settings presents truthful beta privacy information', (
+    tester,
+  ) async {
     await tester.pumpWidget(_settings());
 
     expect(find.text('Configuración'), findsOneWidget);
-    expect(find.text('Apariencia'), findsOneWidget);
-    expect(find.text('Disponible en una versión posterior'), findsOneWidget);
     expect(find.text('Privacidad y almacenamiento local'), findsOneWidget);
-    expect(find.text('Versión 0.1.0'), findsOneWidget);
-    expect(find.byType(SettingsInfoRow), findsNWidgets(2));
+    expect(
+      find.text(
+        'Tus datos locales se guardan cifrados en este dispositivo. '
+        'ConsumoPlus no usa una nube propia para almacenar tu historial.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Contraseñas y sesiones'), findsOneWidget);
+    expect(
+      find.text(
+        'Las contraseñas de EPS Tacna y Electrosur no se almacenan. '
+        'Las cookies de sesión se mantienen solo durante cada sincronización.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Conexiones con proveedores'), findsOneWidget);
+    expect(
+      find.text(
+        'Las conexiones dependen de las condiciones de seguridad de cada '
+        'proveedor. EPS Tacna y Electrosur usan actualmente HTTP y requieren '
+        'tu autorización explícita.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Control de tus datos'), findsOneWidget);
+    expect(
+      find.text(
+        'Puedes eliminar los datos locales de Agua o Electricidad desde el '
+        'módulo correspondiente.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Apariencia'), findsNothing);
+    expect(find.text('Disponible en una versión posterior'), findsNothing);
+    expect(find.byType(SettingsInfoRow), findsNWidgets(4));
     expect(find.byKey(const Key('settingsContent')), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Versión 0.2.0 Beta'),
+      100,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.pump();
+    expect(find.text('Versión 0.2.0 Beta'), findsOneWidget);
   });
 
   testWidgets('Settings contains no misleading interactive controls', (
@@ -60,14 +101,14 @@ void main() {
     );
 
     await tester.scrollUntilVisible(
-      find.text('Versión 0.1.0'),
+      find.text('Versión 0.2.0 Beta'),
       100,
       scrollable: find.byType(Scrollable),
     );
     await tester.pump();
 
     expect(find.byType(ListView), findsOneWidget);
-    expect(find.text('Versión 0.1.0'), findsOneWidget);
+    expect(find.text('Versión 0.2.0 Beta'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

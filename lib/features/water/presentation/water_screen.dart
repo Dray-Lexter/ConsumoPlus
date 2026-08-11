@@ -1,7 +1,7 @@
-import 'package:consumo_plus/app/theme/app_colors.dart';
 import 'package:consumo_plus/app/routes/app_routes.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
-import 'package:consumo_plus/app/theme/app_radii.dart';
+import 'package:consumo_plus/app/theme/utility_theme.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/water/application/water_state.dart';
 import 'package:consumo_plus/features/water/application/water_view_model.dart';
 import 'package:consumo_plus/features/water/application/password_request.dart';
@@ -9,9 +9,11 @@ import 'package:consumo_plus/features/water/presentation/water_copy.dart';
 import 'package:consumo_plus/features/water/presentation/billing_history_screen.dart';
 import 'package:consumo_plus/features/water/presentation/payment_history_screen.dart';
 import 'package:consumo_plus/features/water/presentation/supply_details_screen.dart';
-import 'package:consumo_plus/features/water/presentation/widgets/http_risk_notice.dart';
 import 'package:consumo_plus/features/water/presentation/widgets/water_login_form.dart';
 import 'package:consumo_plus/features/water/presentation/widgets/water_summary.dart';
+import 'package:consumo_plus/shared/widgets/http_risk_authorization.dart';
+import 'package:consumo_plus/shared/widgets/utility_sensitive_actions.dart';
+import 'package:consumo_plus/shared/widgets/utility_message_banner.dart';
 import 'package:flutter/material.dart';
 
 typedef WaterViewModelFactory = Future<WaterViewModel> Function();
@@ -89,8 +91,12 @@ class _WaterScreenState extends State<WaterScreen> {
     if (viewModel == null || snapshot == null) return;
     final request = await showDialog<PasswordRequest>(
       context: context,
-      builder: (_) =>
-          _UpdatePasswordDialog(initialUsername: snapshot.account.customerCode),
+      builder: (_) => UtilityTheme(
+        utilityType: UtilityType.water,
+        child: _UpdatePasswordDialog(
+          initialUsername: snapshot.account.customerCode,
+        ),
+      ),
     );
     if (request == null || !mounted) return;
     await viewModel.synchronize(
@@ -137,28 +143,16 @@ class _WaterScreenState extends State<WaterScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar datos de Agua'),
-        content: const Text(
-          'Se borrarán únicamente los datos cifrados de Agua y el usuario '
-          'recordado. Tus datos de Electricidad no se modificarán.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            key: const Key('confirmDeleteWaterData'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+    final confirmed = await showUtilityActionConfirmation(
+      context,
+      title: 'Eliminar datos de Agua',
+      message:
+          'Se borrarán únicamente los datos cifrados de Agua y el usuario recordado. Tus datos de Electricidad no se modificarán.',
+      actionLabel: 'Eliminar',
+      destructive: true,
+      confirmKey: const Key('confirmDeleteWaterData'),
     );
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       await _deleteAndRecreate();
     }
   }
@@ -194,12 +188,15 @@ class _WaterScreenState extends State<WaterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: const Key('waterScreen'),
-      appBar: AppBar(
-        title: const Text('${WaterCopy.title} · ${WaterCopy.provider}'),
+    return UtilityTheme(
+      utilityType: UtilityType.water,
+      child: Scaffold(
+        key: const Key('waterScreen'),
+        appBar: AppBar(
+          title: const Text('${WaterCopy.title} · ${WaterCopy.provider}'),
+        ),
+        body: SafeArea(child: _buildBody(context)),
       ),
-      body: SafeArea(child: _buildBody(context)),
     );
   }
 
@@ -234,10 +231,19 @@ class _WaterScreenState extends State<WaterScreen> {
         key: const Key('waterDataList'),
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          if (state.errorMessage != null) _ErrorMessage(state.errorMessage!),
+          if (state.errorMessage != null)
+            UtilityMessageBanner(
+              utilityType: UtilityType.water,
+              kind: UtilityMessageKind.error,
+              message: state.errorMessage!,
+            ),
           if (state.errorMessage != null) const SizedBox(height: AppSpacing.md),
           if (state.syncSummary != null) ...[
-            _SuccessMessage(state.syncSummary!),
+            UtilityMessageBanner(
+              utilityType: UtilityType.water,
+              kind: UtilityMessageKind.success,
+              message: state.syncSummary!,
+            ),
             const SizedBox(height: AppSpacing.md),
           ],
           WaterSummary(
@@ -269,7 +275,11 @@ class _WaterScreenState extends State<WaterScreen> {
         const Text(WaterCopy.emptyBody),
         const SizedBox(height: AppSpacing.lg),
         if (state.errorMessage != null) ...[
-          _ErrorMessage(state.errorMessage!),
+          UtilityMessageBanner(
+            utilityType: UtilityType.water,
+            kind: UtilityMessageKind.error,
+            message: state.errorMessage!,
+          ),
           const SizedBox(height: AppSpacing.md),
         ],
         WaterLoginForm(
@@ -334,7 +344,17 @@ class _UpdatePasswordDialogState extends State<_UpdatePasswordDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const HttpRiskNotice(),
+            HttpRiskAuthorization(
+              utilityType: UtilityType.water,
+              checkboxKey: const Key('updateWaterHttpAuthorization'),
+              title: WaterCopy.httpRiskTitle,
+              body: WaterCopy.httpRiskBody,
+              authorization: WaterCopy.httpAuthorization,
+              value: _authorized,
+              enabled: true,
+              onChanged: (value) =>
+                  setState(() => _authorized = value ?? false),
+            ),
             const SizedBox(height: AppSpacing.md),
             TextField(
               key: const Key('updateWaterUsernameField'),
@@ -368,15 +388,6 @@ class _UpdatePasswordDialogState extends State<_UpdatePasswordDialog> {
                 ),
               ),
             ),
-            CheckboxListTile(
-              key: const Key('updateWaterHttpAuthorization'),
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              value: _authorized,
-              onChanged: (value) =>
-                  setState(() => _authorized = value ?? false),
-              title: const Text(WaterCopy.httpAuthorization),
-            ),
           ],
         ),
       ),
@@ -402,49 +413,4 @@ class _UpdatePasswordDialogState extends State<_UpdatePasswordDialog> {
       ],
     );
   }
-}
-
-class _ErrorMessage extends StatelessWidget {
-  const _ErrorMessage(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      liveRegion: true,
-      child: Material(
-        color: AppColors.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.error),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(child: Text(message)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SuccessMessage extends StatelessWidget {
-  const _SuccessMessage(this.message);
-  final String message;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    liveRegion: true,
-    child: Material(
-      color: AppColors.waterContainer,
-      borderRadius: BorderRadius.circular(AppRadii.sm),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Text(message),
-      ),
-    ),
-  );
 }

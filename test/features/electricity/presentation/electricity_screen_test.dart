@@ -1,4 +1,5 @@
 import 'package:consumo_plus/app/theme/app_theme.dart';
+import 'package:consumo_plus/app/theme/app_colors.dart';
 import 'package:consumo_plus/features/electricity/application/electricity_view_model.dart';
 import 'package:consumo_plus/features/electricity/domain/models/electricity_account.dart';
 import 'package:consumo_plus/features/electricity/domain/models/electricity_account_status.dart';
@@ -10,9 +11,13 @@ import 'package:consumo_plus/features/electricity/domain/models/electricity_sync
 import 'package:consumo_plus/features/electricity/domain/repositories/electricity_repository.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_account_status_screen.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_consumption_screen.dart';
+import 'package:consumo_plus/features/electricity/presentation/electricity_copy.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_payment_screen.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_screen.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_supply_screen.dart';
+import 'package:consumo_plus/shared/widgets/utility_consumption_chart.dart';
+import 'package:consumo_plus/shared/widgets/utility_access_tile.dart';
+import 'package:consumo_plus/shared/widgets/utility_greeting.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,6 +26,7 @@ final now = DateTime(2026, 8, 11, 14);
 ElectricitySnapshot snapshot({
   int currentConsumptionWh = 340000,
   int previousConsumptionWh = 280000,
+  List<ElectricityConsumptionRecord>? consumptionRecords,
 }) => ElectricitySnapshot(
   account: ElectricityAccount(
     providerId: 'electrosur',
@@ -47,30 +53,32 @@ ElectricitySnapshot snapshot({
       synchronizedAt: now,
     ),
   ],
-  consumptionRecords: [
-    ElectricityConsumptionRecord(
-      providerId: 'electrosur',
-      contractNumber: 'CONTRATO-FICTICIO-001',
-      billingYear: 2026,
-      billingMonth: 7,
-      sourcePeriodCode: '202607',
-      tariffCode: 'BT5B-FICTICIA',
-      consumptionWh: currentConsumptionWh,
-      monthlyChargeCents: 12345,
-      synchronizedAt: now,
-    ),
-    ElectricityConsumptionRecord(
-      providerId: 'electrosur',
-      contractNumber: 'CONTRATO-FICTICIO-001',
-      billingYear: 2026,
-      billingMonth: 6,
-      sourcePeriodCode: '202606',
-      tariffCode: 'BT5B-FICTICIA',
-      consumptionWh: previousConsumptionWh,
-      monthlyChargeCents: 9810,
-      synchronizedAt: now,
-    ),
-  ],
+  consumptionRecords:
+      consumptionRecords ??
+      [
+        ElectricityConsumptionRecord(
+          providerId: 'electrosur',
+          contractNumber: 'CONTRATO-FICTICIO-001',
+          billingYear: 2026,
+          billingMonth: 7,
+          sourcePeriodCode: '202607',
+          tariffCode: 'BT5B-FICTICIA',
+          consumptionWh: currentConsumptionWh,
+          monthlyChargeCents: 12345,
+          synchronizedAt: now,
+        ),
+        ElectricityConsumptionRecord(
+          providerId: 'electrosur',
+          contractNumber: 'CONTRATO-FICTICIO-001',
+          billingYear: 2026,
+          billingMonth: 6,
+          sourcePeriodCode: '202606',
+          tariffCode: 'BT5B-FICTICIA',
+          consumptionWh: previousConsumptionWh,
+          monthlyChargeCents: 9810,
+          synchronizedAt: now,
+        ),
+      ],
   paymentRecords: [
     ElectricityPaymentRecord(
       providerId: 'electrosur',
@@ -141,6 +149,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No tengo una clave'), findsOneWidget);
+    expect(find.text(ElectricityCopy.httpRiskBody), findsOneWidget);
+    expect(find.byIcon(Icons.shield_outlined), findsOneWidget);
     expect(
       find.ancestor(
         of: find.text('No tengo una clave'),
@@ -149,6 +159,10 @@ void main() {
       findsNothing,
     );
     final connect = find.byKey(const Key('electricityConnectButton'));
+    expect(
+      Theme.of(tester.element(connect)).colorScheme.primary,
+      AppColors.electricity,
+    );
     expect(tester.widget<FilledButton>(connect).onPressed, isNull);
     await tester.enterText(
       find.byKey(const Key('electricityPasswordField')),
@@ -190,9 +204,65 @@ void main() {
     expect(find.text('S/ 10.00'), findsOneWidget);
     expect(find.text('S/ 133.45'), findsOneWidget);
     expect(find.text('S/ 113.45'), findsOneWidget);
+    expect(find.textContaining('Última actualización:'), findsOneWidget);
+    expect(find.byType(UtilityGreeting), findsOneWidget);
+    expect(find.byType(UtilityAccessTile), findsNWidgets(4));
     expect(find.text('AVENIDA FICTICIA 100'), findsNothing);
     expect(find.text('MEDIDOR-FICTICIO-01'), findsNothing);
+
+    final update = find.byKey(const Key('updateElectricityData'));
+    expect(
+      tester.getTopLeft(update).dy,
+      lessThan(tester.getTopLeft(find.text('340 kWh')).dy),
+    );
+    expect(
+      Theme.of(tester.element(update)).colorScheme.primary,
+      AppColors.electricity,
+    );
     semantics.dispose();
+  });
+
+  testWidgets('electricity summary charts only the latest six periods', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      app(
+        _Repository(
+          snapshot(consumptionRecords: _sevenElectricityConsumptions()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final paint = tester.widget<CustomPaint>(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is CustomPaint &&
+            widget.painter is UtilityConsumptionChartPainter,
+      ),
+    );
+    final painter = paint.painter! as UtilityConsumptionChartPainter;
+    expect(painter.points, hasLength(6));
+    expect(painter.points.first.periodLabel, 'Mar 2026');
+    expect(painter.points.last.periodLabel, 'Ago 2026');
+  });
+
+  testWidgets('update repeats the complete HTTP risk and authorization', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(_Repository(snapshot())));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('updateElectricityData')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(ElectricityCopy.httpRiskTitle), findsOneWidget);
+    expect(find.text(ElectricityCopy.httpRiskBody), findsOneWidget);
+    expect(find.byIcon(Icons.shield_outlined), findsOneWidget);
+    expect(
+      find.byKey(const Key('updateElectricityHttpAuthorization')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('summary describes a positive consumption variation', (
@@ -266,6 +336,38 @@ void main() {
     }
   });
 
+  testWidgets('supply can change Electricity after explicit confirmation', (
+    tester,
+  ) async {
+    final repository = _Repository(snapshot());
+    await tester.pumpWidget(app(repository));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -1000));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('openElectricitySupply')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ElectricitySupplyScreen), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -1000));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('changeElectricitySupply')), findsOneWidget);
+    expect(
+      find.byKey(const Key('deleteElectricityDataFromSupply')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('changeElectricitySupply')));
+    await tester.pumpAndSettle();
+    expect(repository.deleteCalls, 0);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Cambiar'));
+    await tester.pumpAndSettle();
+
+    expect(repository.deleteCalls, 1);
+    expect(find.text('Aún no hay datos de Electricidad'), findsOneWidget);
+    expect(find.byType(ElectricitySupplyScreen), findsNothing);
+  });
+
   testWidgets('empty electricity remains usable at 320px with enlarged text', (
     tester,
   ) async {
@@ -287,3 +389,20 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 }
+
+List<ElectricityConsumptionRecord> _sevenElectricityConsumptions() =>
+    List.generate(7, (index) {
+      final period = DateTime(2026, 2 + index);
+      return ElectricityConsumptionRecord(
+        providerId: 'electrosur',
+        contractNumber: 'CONTRATO-FICTICIO-001',
+        billingYear: period.year,
+        billingMonth: period.month,
+        sourcePeriodCode:
+            '${period.year}${period.month.toString().padLeft(2, '0')}',
+        tariffCode: 'BT5B-FICTICIA',
+        consumptionWh: (300 + index * 10) * 1000,
+        monthlyChargeCents: 20000 + index * 100,
+        synchronizedAt: now,
+      );
+    }).reversed.toList();

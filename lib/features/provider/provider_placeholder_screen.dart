@@ -68,13 +68,13 @@ class ProviderPlaceholderScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(visual.iconRadius),
               ),
               child: Text(
-                AppCopy.demoLabel,
+                AppCopy.unavailableProviderLabel,
                 style: textTheme.labelLarge?.copyWith(color: visual.accent),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text(identity.demoMessage, style: textTheme.bodyLarge),
+          Text(identity.availabilityMessage, style: textTheme.bodyLarge),
           const SizedBox(height: AppSpacing.sm),
           Text(
             AppCopy.unavailableConnection,

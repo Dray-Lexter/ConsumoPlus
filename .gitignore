@@ -23,12 +23,15 @@ migrate_working_dir/
 *.sqlite3
 *.keystore
 *.jks
+key.properties
 *.pem
 *.p12
 *.pfx
 *.apk
+*.aab
 *.tmp
 *.bak
+/dist/
 
 # IntelliJ related
 *.iml

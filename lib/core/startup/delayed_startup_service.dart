@@ -1,7 +1,7 @@
 import 'startup_service.dart';
 
-class DemoStartupService implements StartupService {
-  const DemoStartupService(this.delay);
+class DelayedStartupService implements StartupService {
+  const DelayedStartupService(this.delay);
 
   final Duration delay;
 

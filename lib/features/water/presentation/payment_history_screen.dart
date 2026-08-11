@@ -1,5 +1,8 @@
+import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/water/domain/models/payment_record.dart';
 import 'package:consumo_plus/features/water/presentation/water_formatters.dart';
+import 'package:consumo_plus/shared/widgets/history_record_card.dart';
 import 'package:flutter/material.dart';
 
 class PaymentHistoryScreen extends StatelessWidget {
@@ -16,21 +19,26 @@ class PaymentHistoryScreen extends StatelessWidget {
       body: ordered.isEmpty
           ? const Center(child: Text('No hay pagos guardados.'))
           : ListView.separated(
+              padding: const EdgeInsets.all(AppSpacing.lg),
               itemCount: ordered.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
               itemBuilder: (context, index) {
                 final payment = ordered[index];
-                return ExpansionTile(
-                  title: Text(payment.receiptNumber),
-                  subtitle: Text(
-                    '${WaterFormatters.date(payment.paymentDate)} · '
-                    '${WaterFormatters.period(payment.paymentYear, payment.paymentMonth)}\n'
-                    '${payment.paymentCenter}',
+                return HistoryRecordCard(
+                  key: Key('waterPayment-${payment.receiptNumber}'),
+                  utilityType: UtilityType.water,
+                  title: WaterFormatters.period(
+                    payment.paymentYear,
+                    payment.paymentMonth,
                   ),
-                  trailing: Text(WaterFormatters.money(payment.amountCents)),
-                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  amount: WaterFormatters.money(payment.amountCents),
+                  overline: payment.receiptNumber,
+                  details: [
+                    WaterFormatters.date(payment.paymentDate),
+                    payment.paymentCenter,
+                  ],
+                  icon: Icons.account_balance_wallet_outlined,
+                  expandedDetails: [
                     Text('Centro de pago: ${payment.paymentCenter}'),
                     Text('Tipo: ${payment.documentType}'),
                     Text('Detalle: ${payment.detail}'),

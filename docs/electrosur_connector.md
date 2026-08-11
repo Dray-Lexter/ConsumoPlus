@@ -23,10 +23,13 @@ La cookie y la clave existen solo durante una sincronización. No hay una ruta d
 
 La detección defensiva de credenciales rechazadas usa ausencia de `.ASPXAUTH`, retorno a `/Login` o reaparición de ambos campos del formulario. Después de autenticar, esas señales representan sesión expirada. Un fallo de parser conserva su error de sección y nunca se convierte en credenciales incorrectas.
 
-## Verificación manual pendiente
+## Verificación manual
 
-- Confirmar el flujo completo en un teléfono Android con credenciales ingresadas directamente.
-- Confirmar la señal específica que muestra el portal ante una clave incorrecta.
-- Verificar en el futuro el endpoint oficial de logout y la URL oficial de recuperación de clave antes de habilitarlos.
+El flujo completo fue validado en un teléfono Android real con credenciales
+ingresadas directamente. Se confirmaron login, sincronización, estado de
+cuenta, consumos, pagos, datos del suministro, gráfica y persistencia después
+de cerrar y volver a abrir la aplicación.
 
-Ninguna de estas verificaciones debe guardar HTML, cookies, claves ni datos personales.
+La verificación no conserva HTML, cookies, claves ni datos personales. El
+endpoint oficial de logout y la recuperación de clave permanecen fuera del
+alcance hasta que puedan verificarse con seguridad.

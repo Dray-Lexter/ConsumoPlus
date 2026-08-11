@@ -2,6 +2,17 @@
 
 Los importes se almacenan como céntimos enteros y las marcas de sincronización como milisegundos UTC.
 
+## Datos derivados de pronóstico
+
+El pronóstico no agrega tablas ni modifica el esquema. Se calcula en memoria con un máximo inicial de 12 periodos del suministro activo:
+
+| Serie | Agua | Electricidad | Exclusiones |
+| --- | --- | --- | --- |
+| Consumo mensual | `billing_records.consumption_cubic_meters` en m³ | `electricity_consumption_records.consumption_wh / 1000` en kWh | Pagos y deuda |
+| Importe mensual | facturación del periodo en céntimos | `electricity_consumption_records.monthly_charge_cents` | Deuda anterior, saldo, total acumulado y pagos |
+
+El resultado tipado contiene periodo pronosticado, cantidad de muestras, rangos y MAE independientes, modelo elegido por serie, variaciones, tendencia y estado de disponibilidad. No se persiste porque puede reproducirse desde el historial local validado. Consulta [pronóstico local](forecasting.md) para las reglas matemáticas.
+
 ## Agua
 
 Las tablas existentes permanecen sin cambios: `water_accounts`, `billing_records`, `payment_records` y `synchronization_metadata`. Los campos secundarios de `water_accounts` (`service_address`, `service_status`, `tariff_name`, `meter_number`, `connection_type`) son independientes y nullable.

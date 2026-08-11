@@ -1,6 +1,6 @@
 # ConsumoPlus
 
-Aplicación Flutter local-first para consultar servicios domésticos en Tacna. La versión `0.1.0` integra Agua con EPS Tacna y Electricidad con Electrosur.
+Aplicación Flutter local-first para consultar servicios domésticos en Tacna. La versión `0.2.0 Beta` integra Agua con EPS Tacna, Electricidad con Electrosur, próximas fechas y rangos orientativos de consumo e importe.
 
 ## Servicios disponibles
 
@@ -11,14 +11,15 @@ Aplicación Flutter local-first para consultar servicios domésticos en Tacna. L
 - Al reabrir un módulo, la aplicación muestra primero la copia local sin usar la red.
 - Una descarga parcial o fallida conserva los datos validados anteriormente.
 - La eliminación es independiente: Agua nunca borra Electricidad y viceversa.
+- Inicio calcula localmente rangos orientativos del consumo y del importe del siguiente mes para cada suministro activo, cuando existe historial suficiente.
 
 En EPS Tacna, los datos del suministro se extraen del bloque informativo de Facturación. En Electrosur, contrato, titular, dirección y tarifa se obtienen de Estado de Cuenta, y los campos secundarios se combinan desde Suministro. Un campo opcional ausente se muestra como `No disponible en el portal` sin invalidar las demás secciones.
 
 ## Seguridad importante
 
-Android bloquea HTTP globalmente. La configuración autoriza cleartext únicamente a `oficinavirtual.epstacna.com.pe` y `www.electrosur.com.pe`. ConsumoPlus no incluye backend, nube, analítica ni telemetría.
+Android bloquea HTTP globalmente. La configuración autoriza cleartext únicamente a `oficinavirtual.epstacna.com.pe` y `www.electrosur.com.pe`. ConsumoPlus no incluye backend, nube propia para el historial, analítica ni telemetría. Las contraseñas no se almacenan y las cookies de sesión existen únicamente durante cada sincronización. Las integraciones dependen de las condiciones de seguridad de los proveedores y actualmente ambas requieren autorización explícita para usar HTTP.
 
-Consulta [seguridad](docs/security.md), [conector EPS Tacna](docs/eps_tacna_connector.md) y [conector Electrosur](docs/electrosur_connector.md).
+Consulta [seguridad](docs/security.md), [pronóstico local](docs/forecasting.md), [preparación Release Android](docs/release_android.md), [conector EPS Tacna](docs/eps_tacna_connector.md) y [conector Electrosur](docs/electrosur_connector.md).
 
 ## Ejecutar y verificar
 
@@ -33,6 +34,8 @@ flutter build apk --debug
 ```
 
 El APK se genera en `build/app/outputs/flutter-apk/app-debug.apk`.
+
+Los artefactos Release exigen una keystore privada y `android/key.properties`; nunca usan la clave debug. Icono y splash conservan provisionalmente los recursos predeterminados de Flutter hasta recibir la marca definitiva.
 
 ## Estructura
 
@@ -49,7 +52,7 @@ lib/
     data/local/                tablas y persistencia
     data/repositories/         sincronización local-first
     presentation/              pantallas Material 3
-  features/home/               entrada tipada a ambos servicios
+  features/home/               fechas próximas y pronóstico matemático local
 test/                          unitarias, widgets, seguridad y fixtures ficticios
 ```
 

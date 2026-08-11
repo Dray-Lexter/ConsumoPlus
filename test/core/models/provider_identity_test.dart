@@ -1,4 +1,4 @@
-import 'package:consumo_plus/core/config/demo_providers.dart';
+import 'package:consumo_plus/core/config/service_providers.dart';
 import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +11,7 @@ void main() {
       locality: 'Tacna',
       utilityType: UtilityType.water,
       cardDescription: 'Descripción',
-      demoMessage: 'Mensaje',
+      availabilityMessage: 'Mensaje',
     );
 
     expect(identity.id, 'provider-id');
@@ -19,13 +19,13 @@ void main() {
     expect(identity.displayName, 'Proveedor');
   });
 
-  test('demo providers contain only EPS Tacna and Electrosur', () {
-    expect(demoProviders, hasLength(2));
-    expect(demoProviders.map((provider) => provider.displayName), [
+  test('service providers contain only EPS Tacna and Electrosur', () {
+    expect(serviceProviders, hasLength(2));
+    expect(serviceProviders.map((provider) => provider.displayName), [
       'EPS Tacna',
       'Electrosur',
     ]);
-    expect(demoProviders.map((provider) => provider.utilityType), [
+    expect(serviceProviders.map((provider) => provider.utilityType), [
       UtilityType.water,
       UtilityType.electricity,
     ]);

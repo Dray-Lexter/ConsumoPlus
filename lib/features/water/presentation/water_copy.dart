@@ -4,12 +4,12 @@ abstract final class WaterCopy {
   static const introductoryText =
       'Consulta tus recibos y pagos guardados en este dispositivo.';
   static const localFirstNotice =
-      'ConsumoPlus solo se conecta cuando tu lo solicitas.';
+      'ConsumoPlus solo se conecta cuando tú lo solicitas.';
   static const httpRiskTitle =
-      'El portal de EPS Tacna utiliza actualmente una conexion no cifrada.';
+      'El portal de EPS Tacna utiliza actualmente una conexión no cifrada.';
   static const httpRiskBody =
-      'Evita ingresar desde redes Wi-Fi publicas. ConsumoPlus no almacena tu '
-      'contrasena.';
+      'Evita ingresar desde redes Wi-Fi públicas. ConsumoPlus no almacena tu '
+      'contraseña.';
   static const httpAuthorization =
       'Comprendo el riesgo y autorizo esta consulta.';
   static const usernameLabel = 'Usuario de EPS Tacna';
@@ -20,11 +20,11 @@ abstract final class WaterCopy {
   static const connecting = 'Consultando EPS Tacna...';
   static const update = 'Actualizar';
   static const loadingLocal = 'Abriendo tus datos guardados...';
-  static const emptyTitle = 'Aun no hay datos de Agua';
+  static const emptyTitle = 'Aún no hay datos de Agua';
   static const emptyBody =
       'Conecta tu suministro para guardar una copia cifrada de tus recibos y '
       'pagos en este dispositivo.';
-  static const credentialsHelp = '¿Donde encuentro mis datos?';
+  static const credentialsHelp = '¿Dónde encuentro mis datos?';
   static const credentialsHelpBody =
       'El usuario y la clave aparecen en tu recibo de EPS Tacna.';
 }

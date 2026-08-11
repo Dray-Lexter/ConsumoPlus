@@ -1,7 +1,7 @@
-import 'package:consumo_plus/app/theme/app_colors.dart';
-import 'package:consumo_plus/app/theme/app_radii.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_copy.dart';
+import 'package:consumo_plus/shared/widgets/http_risk_authorization.dart';
 import 'package:flutter/material.dart';
 
 class ElectricityLoginForm extends StatelessWidget {
@@ -33,29 +33,15 @@ class ElectricityLoginForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Material(
-          color: AppColors.warningContainer,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.sm),
-            side: const BorderSide(color: AppColors.warningOutline),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  ElectricityCopy.httpRiskTitle,
-                  style: TextStyle(
-                    color: AppColors.warningInk,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xs),
-                Text(ElectricityCopy.httpRiskBody),
-              ],
-            ),
-          ),
+        HttpRiskAuthorization(
+          utilityType: UtilityType.electricity,
+          checkboxKey: const Key('electricityHttpAuthorization'),
+          title: ElectricityCopy.httpRiskTitle,
+          body: ElectricityCopy.httpRiskBody,
+          authorization: ElectricityCopy.authorization,
+          value: authorized,
+          enabled: !busy,
+          onChanged: onAuthorizationChanged,
         ),
         const SizedBox(height: AppSpacing.md),
         TextField(
@@ -102,16 +88,6 @@ class ElectricityLoginForm extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xxs),
         const Text(ElectricityCopy.noPasswordHelp),
-        const SizedBox(height: AppSpacing.sm),
-        CheckboxListTile(
-          key: const Key('electricityHttpAuthorization'),
-          contentPadding: EdgeInsets.zero,
-          controlAffinity: ListTileControlAffinity.leading,
-          value: authorized,
-          enabled: !busy,
-          onChanged: onAuthorizationChanged,
-          title: const Text(ElectricityCopy.authorization),
-        ),
         const SizedBox(height: AppSpacing.sm),
         FilledButton.icon(
           key: const Key('electricityConnectButton'),

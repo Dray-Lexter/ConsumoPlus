@@ -7,7 +7,7 @@ const epsTacnaProvider = ProviderIdentity(
   locality: 'Tacna',
   utilityType: UtilityType.water,
   cardDescription: 'Consulta tus recibos, pagos y datos del suministro',
-  demoMessage: 'La conexión con EPS Tacna está disponible.',
+  availabilityMessage: 'La conexión con EPS Tacna está disponible.',
 );
 
 const electrosurProvider = ProviderIdentity(
@@ -16,7 +16,10 @@ const electrosurProvider = ProviderIdentity(
   locality: 'Tacna',
   utilityType: UtilityType.electricity,
   cardDescription: 'Consulta tu estado de cuenta, consumos y pagos',
-  demoMessage: 'La conexión con Electrosur está disponible.',
+  availabilityMessage: 'La conexión con Electrosur está disponible.',
 );
 
-const demoProviders = <ProviderIdentity>[epsTacnaProvider, electrosurProvider];
+const serviceProviders = <ProviderIdentity>[
+  epsTacnaProvider,
+  electrosurProvider,
+];

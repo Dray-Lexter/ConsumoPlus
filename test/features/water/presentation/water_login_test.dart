@@ -51,10 +51,17 @@ void main() {
 
     expect(
       find.text(
-        'El portal de EPS Tacna utiliza actualmente una conexion no cifrada.',
+        'El portal de EPS Tacna utiliza actualmente una conexión no cifrada.',
       ),
       findsOneWidget,
     );
+    expect(
+      find.text(
+        'Evita ingresar desde redes Wi-Fi públicas. ConsumoPlus no almacena tu contraseña.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.shield_outlined), findsOneWidget);
     expect(find.byKey(const Key('waterUsernameField')), findsOneWidget);
     expect(find.byKey(const Key('waterPasswordField')), findsOneWidget);
 

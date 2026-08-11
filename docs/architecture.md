@@ -10,6 +10,20 @@ ElectricityScreen -> ElectricityViewModel -> ElectricityRepository
                                                   -> parsers -> HTTP
 ```
 
+Inicio mantiene una composición de solo lectura separada de esos conectores:
+
+```text
+HomeScreen -> ForecastController -> LocalForecastSource
+  -> WaterLocalDataSource / ElectricityLocalDataSource -> SQLCipher
+  -> ServiceForecastCalculator
+      -> preparación de series
+      -> cuatro modelos puros
+      -> evaluación MAE y selección
+  -> ForecastSection -> ServiceForecastCard
+```
+
+`LocalForecastSource` filtra por proveedor e identificador del suministro activo. El controlador vuelve a consultar la copia local al regresar de un módulo y al reanudar la aplicación. No interviene en autenticación, scraping, parsers, sincronización ni escritura de datos.
+
 Para Electrosur, el recorrido concreto es:
 
 ```text
@@ -20,7 +34,7 @@ ElectricityScreen -> ElectricityViewModel -> ElectrosurRepository
 
 ## Dominio
 
-Los modelos son inmutables. El dinero usa céntimos enteros y el consumo eléctrico usa Wh enteros. Las excepciones solo exponen códigos y mensajes sanitizados. El dominio no importa Flutter, HTTP, HTML ni SQL.
+Los modelos son inmutables. El dinero usa céntimos enteros y el consumo eléctrico usa Wh enteros. Las excepciones solo exponen códigos y mensajes sanitizados. El dominio no importa Flutter, HTTP, HTML ni SQL. La matemática del pronóstico también es dominio Dart puro y mantiene separadas las series de consumo e importe.
 
 ## Datos
 
@@ -39,3 +53,5 @@ El esquema 2 conserva las cuatro tablas de Agua y agrega cinco de Electricidad. 
 Los ViewModels cargan primero SQLCipher y el identificador recordado; no llaman la red durante `initialize()`. La clave llega como argumento a `synchronize()` y nunca forma parte del estado durable.
 
 Las pantallas reciben modelos tipados y navegan con `Navigator` y `MaterialPageRoute`. Ninguna View conoce endpoints, HTML, SQL o almacenamiento seguro.
+
+Las tarjetas de pronóstico son informativas y no navegables. Agua y Electricidad comparten el mismo componente; su identidad azul o ámbar proviene de la configuración visual centralizada de `UtilityType`.

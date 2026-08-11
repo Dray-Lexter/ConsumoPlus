@@ -76,7 +76,7 @@ class WaterViewModel extends ChangeNotifier {
       _setSafeError(error.userMessage);
     } catch (_) {
       _setSafeError(
-        'No pudimos actualizar tus datos. La informacion anterior se conservo.',
+        'No pudimos actualizar tus datos. La información anterior se conservó.',
       );
     }
   }

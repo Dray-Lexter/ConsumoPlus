@@ -1,7 +1,7 @@
 import 'package:consumo_plus/app/routes/app_routes.dart';
-import 'package:consumo_plus/app/theme/app_colors.dart';
-import 'package:consumo_plus/app/theme/app_radii.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/app/theme/utility_theme.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/electricity/application/electricity_state.dart';
 import 'package:consumo_plus/features/electricity/application/electricity_view_model.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_account_status_screen.dart';
@@ -11,6 +11,9 @@ import 'package:consumo_plus/features/electricity/presentation/electricity_payme
 import 'package:consumo_plus/features/electricity/presentation/electricity_supply_screen.dart';
 import 'package:consumo_plus/features/electricity/presentation/widgets/electricity_login_form.dart';
 import 'package:consumo_plus/features/electricity/presentation/widgets/electricity_summary.dart';
+import 'package:consumo_plus/shared/widgets/http_risk_authorization.dart';
+import 'package:consumo_plus/shared/widgets/utility_sensitive_actions.dart';
+import 'package:consumo_plus/shared/widgets/utility_message_banner.dart';
 import 'package:flutter/material.dart';
 
 typedef ElectricityViewModelFactory = Future<ElectricityViewModel> Function();
@@ -88,8 +91,12 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
     if (viewModel == null || account == null) return;
     final request = await showDialog<_ElectricityCredentials>(
       context: context,
-      builder: (_) =>
-          _UpdateElectricityDialog(initialContract: account.contractNumber),
+      builder: (_) => UtilityTheme(
+        utilityType: UtilityType.electricity,
+        child: _UpdateElectricityDialog(
+          initialContract: account.contractNumber,
+        ),
+      ),
     );
     if (request == null || !mounted) return;
     await viewModel.synchronize(
@@ -137,33 +144,26 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: const RouteSettings(name: AppRoutes.electricitySupply),
-        builder: (_) => ElectricitySupplyScreen(account: account),
+        builder: (_) => ElectricitySupplyScreen(
+          account: account,
+          onChangeSupply: _deleteAndRecreate,
+          onDeleteData: _deleteAndRecreate,
+        ),
       ),
     );
   }
 
   Future<void> _confirmDelete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Eliminar datos de Electricidad'),
-        content: const Text(
+    final confirmed = await showUtilityActionConfirmation(
+      context,
+      title: 'Eliminar datos de Electricidad',
+      message:
           'Se borrarán únicamente los datos cifrados de Electrosur y el número de contrato recordado. Tus datos de Agua permanecerán intactos.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            key: const Key('confirmDeleteElectricityData'),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+      actionLabel: 'Eliminar',
+      destructive: true,
+      confirmKey: const Key('confirmDeleteElectricityData'),
     );
-    if (confirmed == true && mounted) await _deleteAndRecreate();
+    if (confirmed && mounted) await _deleteAndRecreate();
   }
 
   Future<void> _deleteAndRecreate() async {
@@ -196,14 +196,17 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    key: const Key('electricityScreen'),
-    appBar: AppBar(
-      title: const Text(
-        '${ElectricityCopy.title} · ${ElectricityCopy.provider}',
+  Widget build(BuildContext context) => UtilityTheme(
+    utilityType: UtilityType.electricity,
+    child: Scaffold(
+      key: const Key('electricityScreen'),
+      appBar: AppBar(
+        title: const Text(
+          '${ElectricityCopy.title} · ${ElectricityCopy.provider}',
+        ),
       ),
+      body: SafeArea(child: _body()),
     ),
-    body: SafeArea(child: _body()),
   );
 
   Widget _body() {
@@ -238,11 +241,19 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
           if (state.errorMessage != null) ...[
-            _Message(error: true, text: state.errorMessage!),
+            UtilityMessageBanner(
+              utilityType: UtilityType.electricity,
+              kind: UtilityMessageKind.error,
+              message: state.errorMessage!,
+            ),
             const SizedBox(height: AppSpacing.md),
           ],
           if (state.syncSummary != null) ...[
-            _Message(error: false, text: state.syncSummary!),
+            UtilityMessageBanner(
+              utilityType: UtilityType.electricity,
+              kind: UtilityMessageKind.success,
+              message: state.syncSummary!,
+            ),
             const SizedBox(height: AppSpacing.md),
           ],
           ElectricitySummary(
@@ -274,7 +285,11 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
         const Text(ElectricityCopy.emptyBody),
         const SizedBox(height: AppSpacing.lg),
         if (state.errorMessage != null) ...[
-          _Message(error: true, text: state.errorMessage!),
+          UtilityMessageBanner(
+            utilityType: UtilityType.electricity,
+            kind: UtilityMessageKind.error,
+            message: state.errorMessage!,
+          ),
           const SizedBox(height: AppSpacing.md),
         ],
         ElectricityLoginForm(
@@ -293,25 +308,6 @@ class _ElectricityScreenState extends State<ElectricityScreen> {
       ],
     );
   }
-}
-
-class _Message extends StatelessWidget {
-  const _Message({required this.error, required this.text});
-  final bool error;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    liveRegion: true,
-    child: Material(
-      color: error ? AppColors.errorContainer : AppColors.electricityContainer,
-      borderRadius: BorderRadius.circular(AppRadii.sm),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Text(text),
-      ),
-    ),
-  );
 }
 
 class _ElectricityCredentials {
@@ -364,7 +360,16 @@ class _UpdateElectricityDialogState extends State<_UpdateElectricityDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(ElectricityCopy.httpRiskTitle),
+          HttpRiskAuthorization(
+            utilityType: UtilityType.electricity,
+            checkboxKey: const Key('updateElectricityHttpAuthorization'),
+            title: ElectricityCopy.httpRiskTitle,
+            body: ElectricityCopy.httpRiskBody,
+            authorization: ElectricityCopy.authorization,
+            value: _authorized,
+            enabled: true,
+            onChanged: (value) => setState(() => _authorized = value ?? false),
+          ),
           const SizedBox(height: AppSpacing.md),
           TextField(
             key: const Key('updateElectricityContractField'),
@@ -395,14 +400,6 @@ class _UpdateElectricityDialogState extends State<_UpdateElectricityDialog> {
                 ),
               ),
             ),
-          ),
-          CheckboxListTile(
-            key: const Key('updateElectricityHttpAuthorization'),
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: _authorized,
-            onChanged: (value) => setState(() => _authorized = value ?? false),
-            title: const Text(ElectricityCopy.authorization),
           ),
         ],
       ),

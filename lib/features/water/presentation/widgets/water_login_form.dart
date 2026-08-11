@@ -1,6 +1,7 @@
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/water/presentation/water_copy.dart';
-import 'package:consumo_plus/features/water/presentation/widgets/http_risk_notice.dart';
+import 'package:consumo_plus/shared/widgets/http_risk_authorization.dart';
 import 'package:flutter/material.dart';
 
 class WaterLoginForm extends StatelessWidget {
@@ -32,7 +33,16 @@ class WaterLoginForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HttpRiskNotice(),
+        HttpRiskAuthorization(
+          utilityType: UtilityType.water,
+          checkboxKey: const Key('waterHttpAuthorization'),
+          title: WaterCopy.httpRiskTitle,
+          body: WaterCopy.httpRiskBody,
+          authorization: WaterCopy.httpAuthorization,
+          value: authorized,
+          enabled: !busy,
+          onChanged: onAuthorizationChanged,
+        ),
         const SizedBox(height: AppSpacing.md),
         ExpansionTile(
           tilePadding: EdgeInsets.zero,
@@ -83,16 +93,6 @@ class WaterLoginForm extends StatelessWidget {
               ),
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        CheckboxListTile(
-          key: const Key('waterHttpAuthorization'),
-          contentPadding: EdgeInsets.zero,
-          controlAffinity: ListTileControlAffinity.leading,
-          value: authorized,
-          enabled: !busy,
-          onChanged: onAuthorizationChanged,
-          title: const Text(WaterCopy.httpAuthorization),
         ),
         const SizedBox(height: AppSpacing.sm),
         FilledButton.icon(

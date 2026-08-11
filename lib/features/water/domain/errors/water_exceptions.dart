@@ -20,7 +20,7 @@ final class SessionExpiredException extends WaterException {
   const SessionExpiredException()
     : super(
         'session_expired',
-        'La sesion con EPS Tacna termino. Ingresa tu clave nuevamente.',
+        'La sesión con EPS Tacna terminó. Ingresa tu clave nuevamente.',
       );
 }
 
@@ -28,7 +28,7 @@ final class PortalUnavailableException extends WaterException {
   const PortalUnavailableException()
     : super(
         'portal_unavailable',
-        'EPS Tacna no esta disponible en este momento. Intenta mas tarde.',
+        'EPS Tacna no está disponible en este momento. Intenta más tarde.',
       );
 }
 
@@ -36,7 +36,7 @@ final class UnexpectedPortalStructureException extends WaterException {
   const UnexpectedPortalStructureException()
     : super(
         'unexpected_portal_structure',
-        'EPS Tacna cambio su pagina y no pudimos leer los datos con seguridad.',
+        'EPS Tacna cambió su página y no pudimos leer los datos con seguridad.',
       );
 }
 
@@ -44,7 +44,7 @@ final class BillingHistoryStructureException extends WaterException {
   const BillingHistoryStructureException()
     : super(
         'billing_history_structure',
-        'Ingresamos a EPS Tacna, pero no pudimos leer el historial de facturacion.',
+        'Ingresamos a EPS Tacna, pero no pudimos leer el historial de facturación.',
       );
 }
 
@@ -60,7 +60,7 @@ final class LocalStorageException extends WaterException {
   const LocalStorageException()
     : super(
         'local_storage',
-        'No pudimos guardar la actualizacion en este dispositivo. Tus datos anteriores se conservaron.',
+        'No pudimos guardar la actualización en este dispositivo. Tus datos anteriores se conservaron.',
       );
 }
 
@@ -68,7 +68,7 @@ final class NetworkTimeoutException extends WaterException {
   const NetworkTimeoutException()
     : super(
         'network_timeout',
-        'La consulta demoro demasiado. Revisa tu conexion e intenta de nuevo.',
+        'La consulta demoró demasiado. Revisa tu conexión e intenta de nuevo.',
       );
 }
 
@@ -76,6 +76,6 @@ final class IncompleteSynchronizationException extends WaterException {
   const IncompleteSynchronizationException()
     : super(
         'incomplete_synchronization',
-        'La actualizacion quedo incompleta. Tus datos anteriores se conservaron.',
+        'La actualización quedó incompleta. Tus datos anteriores se conservaron.',
       );
 }

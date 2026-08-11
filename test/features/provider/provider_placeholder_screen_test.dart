@@ -17,7 +17,7 @@ void main() {
       locality: 'Ciudad de prueba',
       utilityType: UtilityType.electricity,
       cardDescription: 'Descripción de tarjeta',
-      demoMessage: 'Mensaje específico del proveedor.',
+      availabilityMessage: 'Mensaje específico del proveedor.',
     );
 
     await tester.pumpWidget(
@@ -41,13 +41,19 @@ void main() {
       find.descendant(of: content, matching: find.text('Ciudad de prueba')),
       findsOneWidget,
     );
-    expect(AppCopy.demoLabel, 'Versión demostrativa');
+    expect(AppCopy.unavailableProviderLabel, 'Proveedor no disponible');
     expect(
-      find.descendant(of: content, matching: find.text(AppCopy.demoLabel)),
+      find.descendant(
+        of: content,
+        matching: find.text(AppCopy.unavailableProviderLabel),
+      ),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: content, matching: find.text(identity.demoMessage)),
+      find.descendant(
+        of: content,
+        matching: find.text(identity.availabilityMessage),
+      ),
       findsOneWidget,
     );
     expect(
@@ -92,7 +98,7 @@ void main() {
       locality: 'Ciudad de prueba',
       utilityType: UtilityType.electricity,
       cardDescription: 'Descripción de tarjeta',
-      demoMessage: 'Mensaje específico del proveedor.',
+      availabilityMessage: 'Mensaje específico del proveedor.',
     );
 
     await tester.pumpWidget(
@@ -137,7 +143,8 @@ void main() {
       locality: 'Localidad de prueba con un nombre extenso',
       utilityType: UtilityType.water,
       cardDescription: 'Descripción de tarjeta',
-      demoMessage: 'Mensaje específico del proveedor que ocupa varias líneas.',
+      availabilityMessage:
+          'Mensaje específico del proveedor que ocupa varias líneas.',
     );
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(320, 480);

@@ -1,9 +1,15 @@
 import 'package:consumo_plus/app/theme/app_colors.dart';
 import 'package:consumo_plus/app/theme/app_radii.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/electricity/domain/models/electricity_snapshot.dart';
 import 'package:consumo_plus/features/electricity/presentation/electricity_formatters.dart';
+import 'package:consumo_plus/features/electricity/presentation/widgets/electricity_consumption_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:consumo_plus/shared/widgets/utility_update_button.dart';
+import 'package:consumo_plus/shared/widgets/utility_sensitive_actions.dart';
+import 'package:consumo_plus/shared/widgets/utility_access_tile.dart';
+import 'package:consumo_plus/shared/widgets/utility_greeting.dart';
 
 class ElectricitySummary extends StatelessWidget {
   const ElectricitySummary({
@@ -46,21 +52,25 @@ class ElectricitySummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Hola, ${snapshot.account.ownerName}',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          UtilityGreeting(ownerName: snapshot.account.ownerName),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Última sincronización: '
+            'Última actualización: '
             '${ElectricityFormatters.dateTime(snapshot.synchronization.lastSuccessfulSyncAt!)}',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
           if (shouldRecommendUpdate) ...[
             const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'Hay un nuevo mes disponible. Actualiza cuando quieras.',
-            ),
+            const Text('Hay un nuevo mes. Puedes actualizar cuando lo desees.'),
           ],
+          const SizedBox(height: AppSpacing.md),
+          UtilityUpdateButton(
+            key: const Key('updateElectricityData'),
+            utilityType: UtilityType.electricity,
+            busy: busy,
+            onPressed: onUpdate,
+            label: 'Actualizar con mi clave',
+          ),
           const SizedBox(height: AppSpacing.lg),
           Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -73,7 +83,7 @@ class ElectricitySummary extends StatelessWidget {
               children: [
                 Text(
                   status == null
-                      ? 'Último periodo'
+                      ? 'Último período'
                       : ElectricityFormatters.period(
                           status.billingYear,
                           status.billingMonth,
@@ -127,48 +137,60 @@ class ElectricitySummary extends StatelessWidget {
                 ),
               ),
             ),
+          if (snapshot.consumptionRecords.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Consumo por período',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ElectricityConsumptionChart(
+              records: snapshot.consumptionRecords,
+              maxPeriods: 6,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Explora tus datos',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: AppSpacing.sm),
-          _AccessTile(
+          UtilityAccessTile(
             key: const Key('openElectricityStatus'),
+            utilityType: UtilityType.electricity,
             icon: Icons.account_balance_wallet_outlined,
             title: 'Estado de cuenta',
             onTap: onStatus,
           ),
-          _AccessTile(
+          const SizedBox(height: AppSpacing.sm),
+          UtilityAccessTile(
             key: const Key('openElectricityConsumptions'),
+            utilityType: UtilityType.electricity,
             icon: Icons.insights_outlined,
             title: 'Consumos',
             onTap: onConsumptions,
           ),
-          _AccessTile(
+          const SizedBox(height: AppSpacing.sm),
+          UtilityAccessTile(
             key: const Key('openElectricityPayments'),
+            utilityType: UtilityType.electricity,
             icon: Icons.payments_outlined,
             title: 'Pagos',
             onTap: onPayments,
           ),
-          _AccessTile(
+          const SizedBox(height: AppSpacing.sm),
+          UtilityAccessTile(
             key: const Key('openElectricitySupply'),
+            utilityType: UtilityType.electricity,
             icon: Icons.home_outlined,
             title: 'Datos del suministro',
             onTap: onSupply,
           ),
-          const SizedBox(height: AppSpacing.md),
-          FilledButton.icon(
-            key: const Key('updateElectricityData'),
-            onPressed: busy ? null : onUpdate,
-            icon: const Icon(Icons.refresh_rounded),
-            label: Text(busy ? 'Actualizando...' : 'Actualizar datos'),
-          ),
-          TextButton.icon(
+          const SizedBox(height: AppSpacing.lg),
+          DestructiveActionButton(
             key: const Key('deleteElectricityData'),
             onPressed: busy ? null : onDelete,
-            icon: const Icon(Icons.delete_outline_rounded),
-            label: const Text('Eliminar datos de Electricidad'),
+            label: 'Eliminar datos de Electricidad',
           ),
         ],
       ),
@@ -195,28 +217,6 @@ class _MoneyRow extends StatelessWidget {
     trailing: Text(
       ElectricityFormatters.money(value),
       style: Theme.of(context).textTheme.titleMedium,
-    ),
-  );
-}
-
-class _AccessTile extends StatelessWidget {
-  const _AccessTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    super.key,
-  });
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: Icon(icon, color: AppColors.electricity),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: onTap,
     ),
   );
 }

@@ -1,10 +1,17 @@
 import 'package:consumo_plus/app/theme/app_colors.dart';
 import 'package:consumo_plus/app/theme/app_radii.dart';
 import 'package:consumo_plus/app/theme/app_spacing.dart';
+import 'package:consumo_plus/core/models/utility_type.dart';
 import 'package:consumo_plus/features/water/domain/models/water_snapshot.dart';
 import 'package:consumo_plus/features/water/presentation/water_formatters.dart';
 import 'package:consumo_plus/features/water/presentation/widgets/consumption_chart.dart';
+import 'package:consumo_plus/shared/widgets/utility_consumption_chart.dart';
+import 'package:consumo_plus/shared/widgets/utility_consumption_statistics.dart';
+import 'package:consumo_plus/shared/widgets/utility_access_tile.dart';
+import 'package:consumo_plus/shared/widgets/utility_greeting.dart';
 import 'package:flutter/material.dart';
+import 'package:consumo_plus/shared/widgets/utility_update_button.dart';
+import 'package:consumo_plus/shared/widgets/utility_sensitive_actions.dart';
 
 class WaterSummary extends StatelessWidget {
   const WaterSummary({
@@ -35,16 +42,17 @@ class WaterSummary extends StatelessWidget {
     final previous = chronological.length > 1
         ? chronological[chronological.length - 2]
         : null;
+    final chartPoints = visibleUtilityConsumptionPoints(
+      waterConsumptionPoints(snapshot.billingRecords),
+      maxPeriods: 6,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'Hola, ${snapshot.account.ownerName}',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        UtilityGreeting(ownerName: snapshot.account.ownerName),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Ultima actualizacion: ${WaterFormatters.dateTime(snapshot.synchronization.lastSuccessfulSyncAt ?? snapshot.account.synchronizedAt)}',
+          'Última actualización: ${WaterFormatters.dateTime(snapshot.synchronization.lastSuccessfulSyncAt ?? snapshot.account.synchronizedAt)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         if (shouldRecommendUpdate) ...[
@@ -52,20 +60,16 @@ class WaterSummary extends StatelessWidget {
           const Text('Hay un nuevo mes. Puedes actualizar cuando lo desees.'),
         ],
         const SizedBox(height: AppSpacing.md),
-        FilledButton.icon(
+        UtilityUpdateButton(
           key: const Key('updateWaterData'),
-          onPressed: busy ? null : onUpdate,
-          icon: busy
-              ? const SizedBox.square(
-                  dimension: AppSpacing.md,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.refresh_rounded),
-          label: Text(busy ? 'Actualizando...' : 'Actualizar con mi clave'),
+          utilityType: UtilityType.water,
+          busy: busy,
+          onPressed: onUpdate,
+          label: 'Actualizar con mi clave',
         ),
         const SizedBox(height: AppSpacing.lg),
         if (latest == null)
-          const Text('Todavia no hay recibos guardados.')
+          const Text('Todavía no hay recibos guardados.')
         else ...[
           Text(
             WaterFormatters.period(latest.billingYear, latest.billingMonth),
@@ -108,40 +112,55 @@ class WaterSummary extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'Consumo por periodo',
+            'Consumo por período',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: AppSpacing.sm),
-          ConsumptionChart(records: snapshot.billingRecords),
+          ConsumptionChart(records: snapshot.billingRecords, maxPeriods: 6),
+          const SizedBox(height: AppSpacing.md),
+          UtilityConsumptionStatistics(
+            points: chartPoints,
+            maximumAveragePeriods: 6,
+            valueFormatter: (value) => '${_number(value)} m³',
+          ),
         ],
         const SizedBox(height: AppSpacing.lg),
-        _NavigationTile(
+        Text(
+          'Explora tus datos',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        UtilityAccessTile(
           key: const Key('openBillingHistory'),
+          utilityType: UtilityType.water,
           title: 'Historial de recibos',
           subtitle: '${snapshot.billingRecords.length} guardados',
           icon: Icons.receipt_long_outlined,
           onTap: onBilling,
         ),
-        _NavigationTile(
+        const SizedBox(height: AppSpacing.sm),
+        UtilityAccessTile(
           key: const Key('openPaymentHistory'),
+          utilityType: UtilityType.water,
           title: 'Historial de pagos',
           subtitle: '${snapshot.paymentRecords.length} guardados',
           icon: Icons.account_balance_wallet_outlined,
           onTap: onPayments,
         ),
-        _NavigationTile(
+        const SizedBox(height: AppSpacing.sm),
+        UtilityAccessTile(
           key: const Key('openSupplyDetails'),
+          utilityType: UtilityType.water,
           title: 'Datos del suministro',
-          subtitle: snapshot.account.customerCode,
+          subtitle: 'Información de la cuenta',
           icon: Icons.home_outlined,
           onTap: onSupply,
         ),
         const SizedBox(height: AppSpacing.lg),
-        OutlinedButton.icon(
+        DestructiveActionButton(
           key: const Key('deleteWaterData'),
           onPressed: busy ? null : onDelete,
-          icon: const Icon(Icons.delete_outline_rounded),
-          label: const Text('Borrar copia local'),
+          label: 'Eliminar datos de Agua',
         ),
       ],
     );
@@ -153,9 +172,9 @@ class WaterSummary extends StatelessWidget {
 
   static String _variation(double current, double previous) {
     final difference = current - previous;
-    if (difference == 0) return 'Sin variacion respecto al periodo anterior.';
-    final direction = difference > 0 ? 'Aumento' : 'Reduccion';
-    return '$direction de ${_number(difference.abs())} m³ respecto al periodo anterior.';
+    if (difference == 0) return 'Sin variación respecto al período anterior.';
+    final direction = difference > 0 ? 'Aumento' : 'Reducción';
+    return '$direction de ${_number(difference.abs())} m³ respecto al período anterior.';
   }
 }
 
@@ -197,33 +216,6 @@ class _MetricCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _NavigationTile extends StatelessWidget {
-  const _NavigationTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-    super.key,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: AppColors.water),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: onTap,
     );
   }
 }

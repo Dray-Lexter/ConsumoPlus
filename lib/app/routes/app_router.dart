@@ -1,9 +1,11 @@
 import 'package:consumo_plus/app/config/app_copy.dart';
 import 'package:consumo_plus/app/routes/app_routes.dart';
-import 'package:consumo_plus/core/config/demo_providers.dart';
+import 'package:consumo_plus/core/config/service_providers.dart';
 import 'package:consumo_plus/core/models/provider_identity.dart';
 import 'package:consumo_plus/core/startup/startup_controller.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
+import 'package:consumo_plus/features/home/application/forecast_controller.dart';
+import 'package:consumo_plus/features/home/application/upcoming_dates_controller.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/settings/settings_screen.dart';
 import 'package:consumo_plus/features/splash/splash_screen.dart';
@@ -14,16 +16,24 @@ import 'package:flutter/material.dart';
 class AppRouter {
   const AppRouter({
     required this.startupController,
+    this.createUpcomingDatesController,
+    this.createForecastController,
     this.createWaterViewModel,
     this.createElectricityViewModel,
   });
 
   final StartupController startupController;
+  final UpcomingDatesControllerFactory? createUpcomingDatesController;
+  final ForecastControllerFactory? createForecastController;
   final WaterViewModelFactory? createWaterViewModel;
   final ElectricityViewModelFactory? createElectricityViewModel;
 
   static Future<Never> _missingWaterDependencies() {
     throw StateError('Water dependencies are not configured.');
+  }
+
+  static Future<Never> _missingHomeDependencies() {
+    throw StateError('Home dependencies are not configured.');
   }
 
   static Future<Never> _missingElectricityDependencies() {
@@ -36,14 +46,18 @@ class AppRouter {
       builder: (context) => switch (settings.name) {
         AppRoutes.splash => SplashScreen(controller: startupController),
         AppRoutes.home => HomeScreen(
-          providers: demoProviders,
-          onProviderSelected: (identity) {
-            Navigator.of(
+          providers: serviceProviders,
+          createUpcomingDatesController:
+              createUpcomingDatesController ?? _missingHomeDependencies,
+          createForecastController:
+              createForecastController ?? _missingHomeDependencies,
+          onProviderSelected: (identity) async {
+            await Navigator.of(
               context,
             ).pushNamed(AppRoutes.provider, arguments: identity);
           },
-          onSettingsSelected: () {
-            Navigator.of(context).pushNamed(AppRoutes.settings);
+          onSettingsSelected: () async {
+            await Navigator.of(context).pushNamed(AppRoutes.settings);
           },
         ),
         AppRoutes.settings => const SettingsScreen(),

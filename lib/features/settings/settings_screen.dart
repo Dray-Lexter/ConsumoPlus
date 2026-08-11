@@ -20,19 +20,31 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             const SettingsInfoRow(
-              icon: Icons.palette_outlined,
-              title: AppCopy.appearanceTitle,
-              description: AppCopy.appearanceDescription,
+              icon: Icons.privacy_tip_outlined,
+              title: AppCopy.privacyStorageTitle,
+              description: AppCopy.privacyStorageDescription,
             ),
             const SizedBox(height: AppSpacing.md),
             const SettingsInfoRow(
-              icon: Icons.privacy_tip_outlined,
-              title: AppCopy.privacyStorageTitle,
-              description: '',
+              icon: Icons.password_outlined,
+              title: AppCopy.privacyCredentialsTitle,
+              description: AppCopy.privacyCredentialsDescription,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const SettingsInfoRow(
+              icon: Icons.http_outlined,
+              title: AppCopy.privacyConnectionsTitle,
+              description: AppCopy.privacyConnectionsDescription,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const SettingsInfoRow(
+              icon: Icons.delete_outline,
+              title: AppCopy.privacyControlTitle,
+              description: AppCopy.privacyControlDescription,
             ),
             const SizedBox(height: AppSpacing.xl),
             Text(
-              '${AppCopy.versionLabel} ${AppMetadata.version}',
+              '${AppCopy.versionLabel} ${AppMetadata.displayVersion}',
               style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedInk),
             ),
           ],

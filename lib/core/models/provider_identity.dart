@@ -7,7 +7,7 @@ class ProviderIdentity {
     required this.locality,
     required this.utilityType,
     required this.cardDescription,
-    required this.demoMessage,
+    required this.availabilityMessage,
   });
 
   final String id;
@@ -15,5 +15,5 @@ class ProviderIdentity {
   final String locality;
   final UtilityType utilityType;
   final String cardDescription;
-  final String demoMessage;
+  final String availabilityMessage;
 }

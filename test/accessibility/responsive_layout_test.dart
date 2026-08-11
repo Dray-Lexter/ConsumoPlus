@@ -1,8 +1,27 @@
 import 'package:consumo_plus/app/theme/app_theme.dart';
-import 'package:consumo_plus/core/config/demo_providers.dart';
+import 'package:consumo_plus/core/config/service_providers.dart';
+import 'package:consumo_plus/features/home/application/forecast_controller.dart';
+import 'package:consumo_plus/features/home/application/forecast_source.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
+import 'package:consumo_plus/features/home/application/upcoming_dates_controller.dart';
+import 'package:consumo_plus/features/home/application/upcoming_dates_source.dart';
+import 'package:consumo_plus/features/home/domain/forecast/service_forecast_calculator.dart';
+import 'package:consumo_plus/features/home/domain/upcoming_dates_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class _EmptyUpcomingDatesSource implements UpcomingDatesSource {
+  @override
+  Future<UpcomingDatesInput> load() async => const UpcomingDatesInput(
+    waterConnected: false,
+    electricityConnected: false,
+  );
+}
+
+class _EmptyForecastSource implements ForecastSource {
+  @override
+  Future<List<ServiceForecastInput>> load() async => const [];
+}
 
 void main() {
   testWidgets('Home remains responsive and exposes provider actions', (
@@ -25,9 +44,13 @@ void main() {
             child: child!,
           ),
           home: HomeScreen(
-            providers: demoProviders,
+            providers: serviceProviders,
             onProviderSelected: (_) {},
             onSettingsSelected: () {},
+            createUpcomingDatesController: () async =>
+                UpcomingDatesController(source: _EmptyUpcomingDatesSource()),
+            createForecastController: () async =>
+                ForecastController(source: _EmptyForecastSource()),
           ),
         ),
       );
