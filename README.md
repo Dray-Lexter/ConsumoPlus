@@ -1,106 +1,83 @@
 # ConsumoPlus
 
-ConsumoPlus es una demostración móvil para hogares de Tacna que presenta, en
-un solo lugar, los servicios de agua de EPS Tacna y electricidad de
-Electrosur. La versión actual permite recorrer la experiencia y reconocer a
-cada proveedor; no consulta cuentas, consumos ni datos reales y todavía no se
-conecta con los proveedores.
+Aplicacion Flutter para consultar servicios domesticos en Tacna. La version
+`0.1.0` implementa Agua con EPS Tacna y conserva Electricidad con Electrosur
+como espacio demostrativo.
 
-## Estado y versión
+## Agua en esta etapa
 
-- Versión de la aplicación: `0.1.0` (`0.1.0+1` en `pubspec.yaml`).
-- Estado: demostración local de la primera etapa.
-- Proveedores incluidos: EPS Tacna (agua) y Electrosur (electricidad), ambos
-  para Tacna.
-- Interfaz: Flutter Material 3, optimizada para móvil y texto ampliado.
+- El usuario inicia la consulta manualmente y autoriza de forma explicita la
+  conexion HTTP del portal de EPS Tacna.
+- La clave y las cookies solo existen en memoria durante la consulta.
+- El nombre de usuario puede recordarse mediante el almacenamiento seguro de
+  Android.
+- Cuenta, recibos, pagos y metadatos se guardan en una base SQLCipher local.
+- Al volver a Agua, la app lee primero la copia local y no usa la red.
+- Actualizar siempre solicita nuevamente la clave.
+- Los historiales, el grafico y los detalles funcionan sin Internet despues de
+  una sincronizacion correcta.
+- Una descarga parcial o fallida conserva los datos validos anteriores.
 
-## Requisitos
+Los datos del suministro se extraen del bloque informativo de Facturacion. Los
+campos secundarios, como direccion, estado, tarifa, medidor y tipo de conexion,
+son opcionales: si alguno no aparece, la app muestra
+`No disponible en el portal` sin invalidar el resto de la sincronizacion ni
+inventar valores. Un error posterior a un login aceptado se informa como fallo
+de sincronizacion, no como credenciales incorrectas.
 
-- Flutter estable compatible con Dart `>=3.12.2 <4.0.0`. El proyecto se
-  verifica con Flutter `3.44.8` y Dart `3.12.2`.
-- Para ejecutar o compilar Android: Android SDK configurado y una cadena de
-  herramientas Java/Android compatible con Flutter (Java 17 para este
-  proyecto).
-- Un emulador o dispositivo Android disponible para `flutter run`.
+## Seguridad importante
 
-Comprueba la instalación con:
+EPS Tacna sirve su oficina virtual mediante HTTP. Android bloquea HTTP por
+defecto en la app y permite una excepcion solo para
+`oficinavirtual.epstacna.com.pe`. El formulario explica el riesgo antes de
+habilitar la conexion. ConsumoPlus no incluye backend, nube, analitica ni
+telemetria.
 
-```powershell
-flutter doctor
-flutter --version
-```
+Consulta [docs/security.md](docs/security.md) y
+[docs/eps_tacna_connector.md](docs/eps_tacna_connector.md) para los detalles.
 
-## Preparación y ejecución
+## Ejecutar y verificar
 
-Desde la raíz del proyecto:
+Requiere Flutter 3.44.8/Dart 3.12.2, Java 17 y Android SDK configurado.
 
 ```powershell
 flutter pub get
-flutter run
-```
-
-La aplicación muestra una introducción breve, las dos tarjetas de proveedor,
-pantallas informativas de demostración y una pantalla estática de
-configuración.
-
-## Verificación local
-
-```powershell
-dart format .
+dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test
 flutter build apk --debug
 ```
 
-El APK de depuración, cuando el Android SDK está disponible y la compilación
-termina correctamente, se genera en
-`build/app/outputs/flutter-apk/app-debug.apk`.
+El APK se genera en `build/app/outputs/flutter-apk/app-debug.apk`.
 
-## Rutas implementadas
-
-| Ruta | Pantalla | Comportamiento |
-| --- | --- | --- |
-| `/` | Inicio | Prepara la demostración y reemplaza la ruta por `/home` al finalizar. |
-| `/home` | Hogar | Presenta EPS Tacna, Electrosur y el acceso a configuración. |
-| `/provider` | Proveedor | Requiere un `ProviderIdentity` tipado y muestra su contenido demostrativo. |
-| `/settings` | Configuración | Muestra información estática de apariencia, privacidad y versión. |
-
-Una ruta desconocida o `/provider` sin un `ProviderIdentity` válido muestra
-`Ruta no disponible`.
-
-## Alcance y no objetivos
-
-Esta etapa no incluye:
-
-- autenticación, cuentas de usuario ni selección de ciudad;
-- conexión con EPS Tacna, Electrosur o servicios web;
-- lecturas, recibos, pagos, métricas, gráficos o estados de consumo;
-- almacenamiento local o remoto;
-- controles que simulen apariencia, privacidad o conexiones todavía no
-  implementadas.
-
-## Estructura y límites
+## Estructura
 
 ```text
 lib/
-├── app/                 # Aplicación, rutas, tema, textos y metadatos
-├── core/
-│   ├── config/          # Configuración y proveedores de la demostración
-│   ├── models/          # Identidad tipada y tipo de servicio
-│   └── startup/         # Contrato, servicio y controlador de inicio
-├── features/            # Splash, hogar, proveedor y configuración
-├── shared/widgets/      # Marca, tarjeta de servicio y filas informativas
-└── main.dart            # Composición de la demostración
-test/                    # Pruebas unitarias, de widgets y accesibilidad
+  app/                    rutas, tema y configuracion de producto
+  core/                   identidad de proveedores e inicio reemplazable
+  features/water/
+    application/          WaterViewModel, estados y composicion
+    domain/               modelos, errores y contrato del repositorio
+    data/
+      remote/             HTTP, cookies en memoria y fuente EPS Tacna
+      parsers/            HTML a modelos tipados
+      local/              SQLCipher, esquema y almacenamiento seguro
+      repositories/       sincronizacion atomica local-first
+    presentation/         pantallas Material 3 y widgets
+  features/home/          entrada a Agua y Electricidad
+  features/provider/      placeholder reutilizable para Electrosur
+test/                     unitarias, widgets, seguridad y fixtures sanitizados
 ```
 
-`StartupController` contiene el estado y la coordinación del inicio. Depende
-del contrato `StartupService`, evita inicializaciones simultáneas y ofrece el
-reintento; la pantalla de inicio observa el controlador y no conoce la
-implementación concreta del servicio.
+Documentos adicionales:
 
-`ProviderIdentity` es el modelo inmutable y tipado que lleva la identidad, la
-localidad, el tipo de servicio y el texto demostrativo de cada proveedor. No
-contiene navegación ni decisiones visuales: las rutas consumen el modelo y la
-configuración visual de agua/electricidad se resuelve de forma centralizada a
-partir de `UtilityType`.
+- [docs/architecture.md](docs/architecture.md)
+- [docs/data_dictionary.md](docs/data_dictionary.md)
+- [docs/design_system.md](docs/design_system.md)
+- [docs/security.md](docs/security.md)
+- [docs/eps_tacna_connector.md](docs/eps_tacna_connector.md)
+
+No se deben usar credenciales reales en pruebas, fixtures, capturas, commits o
+documentacion. La prueba manual del portal se realiza unicamente en un telefono
+o sesion controlada, ingresando las credenciales directamente.

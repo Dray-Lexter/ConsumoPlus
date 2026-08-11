@@ -12,6 +12,24 @@
 .swiftpm/
 migrate_working_dir/
 
+# Local agent and environment configuration
+.agents/
+.env
+.env.*
+
+# Local data and private key material
+*.db
+*.sqlite
+*.sqlite3
+*.keystore
+*.jks
+*.pem
+*.p12
+*.pfx
+*.apk
+*.tmp
+*.bak
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -32,6 +50,9 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+
+# Machine-specific Android configuration
+/android/local.properties
 
 # Symbolication related
 app.*.symbols

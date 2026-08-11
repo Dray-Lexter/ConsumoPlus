@@ -11,6 +11,7 @@ import 'package:consumo_plus/core/startup/startup_service.dart';
 import 'package:consumo_plus/features/home/home_screen.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/settings/settings_screen.dart';
+import 'package:consumo_plus/features/water/presentation/water_screen.dart';
 import 'package:consumo_plus/shared/widgets/utility_service_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -256,17 +257,9 @@ void main() {
       observer.pushedRoutes.last.settings.arguments,
       same(epsTacnaProvider),
     );
-    expect(find.byType(ProviderPlaceholderScreen), findsOneWidget);
-    expect(
-      tester
-          .widget<ProviderPlaceholderScreen>(
-            find.byType(ProviderPlaceholderScreen),
-          )
-          .identity,
-      same(epsTacnaProvider),
-    );
-    expect(find.text('Agua'), findsNWidgets(2));
-    expect(find.text('EPS Tacna'), findsOneWidget);
+    expect(find.byType(WaterScreen), findsOneWidget);
+    expect(find.byType(ProviderPlaceholderScreen), findsNothing);
+    expect(find.text('Agua · EPS Tacna'), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

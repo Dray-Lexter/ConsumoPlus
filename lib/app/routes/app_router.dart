@@ -7,12 +7,18 @@ import 'package:consumo_plus/features/home/home_screen.dart';
 import 'package:consumo_plus/features/provider/provider_placeholder_screen.dart';
 import 'package:consumo_plus/features/settings/settings_screen.dart';
 import 'package:consumo_plus/features/splash/splash_screen.dart';
+import 'package:consumo_plus/features/water/presentation/water_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
-  const AppRouter({required this.startupController});
+  const AppRouter({required this.startupController, this.createWaterViewModel});
 
   final StartupController startupController;
+  final WaterViewModelFactory? createWaterViewModel;
+
+  static Future<Never> _missingWaterDependencies() {
+    throw StateError('Water dependencies are not configured.');
+  }
 
   Route<void> onGenerateRoute(RouteSettings settings) {
     return MaterialPageRoute<void>(
@@ -32,6 +38,11 @@ class AppRouter {
         ),
         AppRoutes.settings => const SettingsScreen(),
         AppRoutes.provider => switch (settings.arguments) {
+          ProviderIdentity identity when identity.id == epsTacnaProvider.id =>
+            WaterScreen(
+              createViewModel:
+                  createWaterViewModel ?? _missingWaterDependencies,
+            ),
           ProviderIdentity identity => ProviderPlaceholderScreen(
             identity: identity,
           ),

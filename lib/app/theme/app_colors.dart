@@ -11,4 +11,8 @@ abstract final class AppColors {
   static const electricity = Color(0xFF9A5700);
   static const electricityContainer = Color(0xFFFFEDCF);
   static const error = Color(0xFFBA1A1A);
+  static const errorContainer = Color(0xFFFFDAD6);
+  static const warningContainer = Color(0xFFFFF1D6);
+  static const warningOutline = Color(0xFFE2B86B);
+  static const warningInk = Color(0xFF604100);
 }
